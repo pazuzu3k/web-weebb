@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/teatro/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 83,
+      "bodyTextHash": "5180be7f304ea6f1cb0ba010b9b8e6c41ffe4b16a39afe7ce4b683d9c94fd088",
+      "bodyTextPrefix": "smioochy en proceso correspondencia perdida ↑ algo mío sigue vib",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/teatro.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 83,
+      "bodyTextHash": "5180be7f304ea6f1cb0ba010b9b8e6c41ffe4b16a39afe7ce4b683d9c94fd088",
+      "bodyTextPrefix": "smioochy en proceso correspondencia perdida ↑ algo mío sigue vib",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/teatro-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/teatro.json"
+}

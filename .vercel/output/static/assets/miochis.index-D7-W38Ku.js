@@ -1,0 +1,1 @@
+import{r as e}from"./index-BkTTRsFi.js";import{t}from"./territorio-host-DxPO8YKP.js";var n=e(),r=()=>(0,n.jsx)(t,{pagina:`miochis`});export{r as component};

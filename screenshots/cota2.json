@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/cota/2/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 23,
+      "bodyTextHash": "24bc4d6a0a38f3146ff16bf34be45704cfc6d953547b59806fbf06859c9409bd",
+      "bodyTextPrefix": "smioochy en proceso 2 ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/cota2.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 23,
+      "bodyTextHash": "24bc4d6a0a38f3146ff16bf34be45704cfc6d953547b59806fbf06859c9409bd",
+      "bodyTextPrefix": "smioochy en proceso 2 ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/cota2-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/cota2.json"
+}

@@ -1,0 +1,100 @@
+{
+  "id": "01-contingencia",
+  "andamiaje": true,
+  "pregunta": "¿Puede la contingencia abrir una bifurcación?",
+  "nombres": ["Francisco", "Ema"],
+  "conceptos": ["contingencia", "cosmotécnica", "individuación"],
+  "reaparece": [
+    { "id": "1", "marca": "nosotrxs" },
+    { "id": "2", "marca": "bifurcacion" },
+    { "id": "3", "marca": "lugar" }
+  ],
+  "fragmentos": [
+    {
+      "id": "p0",
+      "strato": "superficie",
+      "estatuto": "registro",
+      "cuerpo": "¿Puede la contingencia abrir una bifurcación?"
+    },
+    {
+      "id": "p1",
+      "strato": "intervencion",
+      "estatuto": "registro",
+      "quien": "Francisco",
+      "cuerpo": "no es lo que queda cuando el plan falla. tampoco es un adorno del azar."
+    },
+    {
+      "id": "p2",
+      "strato": "intervencion",
+      "estatuto": "registro",
+      "quien": "Ema",
+      "cuerpo": "si la contingencia fuera solo excepción, no abriría nada. quedaría pegada al borde."
+    },
+    {
+      "id": "p3",
+      "strato": "vacio",
+      "estatuto": "vacio",
+      "quien": "una voz",
+      "cuerpo": "",
+      "hueco": "MONTAJE: falta intervención de X"
+    },
+    {
+      "id": "p4",
+      "strato": "digestion",
+      "estatuto": "digestion",
+      "cuerpo": "cosmotécnica aparece y no se cierra. no hay definición que baste para esta mesa."
+    },
+    {
+      "id": "p5",
+      "strato": "digestion",
+      "estatuto": "digestion",
+      "cuerpo": "individuación no es identidad. no hay perfil que la sostenga."
+    },
+    {
+      "id": "p6",
+      "strato": "registro",
+      "estatuto": "registro",
+      "cuerpo": "una bifurcación no se anuncia. se nota después, si es que se nota."
+    },
+    {
+      "id": "nosotrxs",
+      "strato": "deriva",
+      "estatuto": "deriva",
+      "reaparece": "1",
+      "cuerpo": "nosotrxs"
+    },
+    {
+      "id": "bifurcacion",
+      "strato": "deriva",
+      "estatuto": "deriva",
+      "reaparece": "2",
+      "cuerpo": "bifurcacion"
+    },
+    {
+      "id": "lugar",
+      "strato": "deriva",
+      "estatuto": "deriva",
+      "reaparece": "3",
+      "cuerpo": "lugar"
+    },
+    {
+      "id": "deriva",
+      "strato": "deriva",
+      "estatuto": "deriva",
+      "vertiente": "deriva",
+      "cuerpo": "una vertiente no resume la mesa. se desvía y no vuelve a presentar a nadie."
+    },
+    {
+      "id": "p7",
+      "strato": "intervencion",
+      "estatuto": "reconstruccion",
+      "cuerpo": "abrir no es elegir. elegir ya llega tarde."
+    },
+    {
+      "id": "p8",
+      "strato": "registro",
+      "estatuto": "registro",
+      "cuerpo": "01-contingencia. no hay 02 en este archivo."
+    }
+  ]
+}

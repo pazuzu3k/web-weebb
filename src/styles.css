@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #ffffff;
+  --color-fg: #111111;
+  --color-line: #6e6e6e;
+  --color-papel: #ffffff;
+  --color-tinta: #111111;
+  --font-sans: "Newsreader", Times, serif;
+  --font-mono: "Space Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}

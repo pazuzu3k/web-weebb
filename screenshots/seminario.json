@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/seminario/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 78,
+      "bodyTextHash": "ea990231242dbaaf3ca89106e9f9361bed7260f4b59a09e640be67ff77a8be7f",
+      "bodyTextPrefix": "smioochy en proceso .ask ¿Puede la contingencia abrir una bifurc",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/seminario.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 78,
+      "bodyTextHash": "ea990231242dbaaf3ca89106e9f9361bed7260f4b59a09e640be67ff77a8be7f",
+      "bodyTextPrefix": "smioochy en proceso .ask ¿Puede la contingencia abrir una bifurc",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/seminario-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/seminario.json"
+}

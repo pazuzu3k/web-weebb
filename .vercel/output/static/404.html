@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>smioochy</title>
+  <link rel="stylesheet" href="/fonts/faces.css">
+  <link rel="stylesheet" href="/territorio.css">
+  <script src="/smioochy.config.js"></script>
+</head>
+<body>
+  <div id="territorio" data-pagina="superficie"></div>
+  <script type="module">
+    const m = location.pathname.match(/\/cota\/(\d+)/);
+    const el = document.getElementById('territorio');
+    if (m) {
+      el.dataset.pagina = 'cota';
+      el.dataset.cota = m[1];
+      el.dataset.strato = 'vacio';
+    }
+    import('/territorio.js');
+  </script>
+</body>
+</html>

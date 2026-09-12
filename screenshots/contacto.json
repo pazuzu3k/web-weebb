@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/contacto/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 26,
+      "bodyTextHash": "7fb0b0ed58adbb2685b165e78a00459c9cf842b294e141564ca3dbf23653d90d",
+      "bodyTextPrefix": "smioochy en proceso mail ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/contacto.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 26,
+      "bodyTextHash": "7fb0b0ed58adbb2685b165e78a00459c9cf842b294e141564ca3dbf23653d90d",
+      "bodyTextPrefix": "smioochy en proceso mail ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/contacto-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/contacto.json"
+}

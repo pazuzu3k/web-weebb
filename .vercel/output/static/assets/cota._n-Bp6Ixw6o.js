@@ -1,0 +1,1 @@
+import{r as e,t}from"./index-BkTTRsFi.js";import{t as n}from"./territorio-host-DxPO8YKP.js";var r=e();function i(){let{n:e}=t.useParams();return(0,r.jsx)(n,{pagina:`cota`,cota:e})}export{i as component};

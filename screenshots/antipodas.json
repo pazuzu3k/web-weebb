@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/antipodas/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 21,
+      "bodyTextHash": "8a3db2e5f9a33e68b172747845fd0bb59698113817abd8d3411be8375e1c6c76",
+      "bodyTextPrefix": "smioochy en proceso ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/antipodas.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "smioochy",
+      "hasCanvas": false,
+      "bodyTextLen": 21,
+      "bodyTextHash": "8a3db2e5f9a33e68b172747845fd0bb59698113817abd8d3411be8375e1c6c76",
+      "bodyTextPrefix": "smioochy en proceso ↑",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/antipodas-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/antipodas.json"
+}
