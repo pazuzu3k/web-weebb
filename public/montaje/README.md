@@ -1,19 +1,15 @@
-# montaje — páginas «en proceso»
+# montaje
 
-archivo único: `contenidos.json` (este mismo folder).
+Las instrucciones largas (para quien nunca tocó código) están en:
 
-```json
-{
-  "texto": "tu texto o html",
-  "imagenes": ["/montaje/archivos/foto.jpg"],
-  "pdfs": ["/montaje/archivos/nota.pdf"]
-}
-```
+**`README-MONTAJE.md`** en la raíz del repo.
 
-deja los archivos en `archivos/`.
+Resumen:
 
-- tipografías a, c, d → `letras.a` / `letras.c` / `letras.d`
-- cotas 1–53 → `cotas["7"]` (la 54 es la escalera)
-- peldaños 1–100 salvo 54 y 101 → `peldanos["3"]`
+1. Subí fotos/PDF a esta carpeta: `archivos/`
+2. Escribí el texto en `contenidos.json`
 
-ver también `/README-MONTAJE.md` en la raíz del repo.
+- tipografías a, c, d → `letras`
+- pop-ups b y e (home) → `ventanas`
+- cotas 1–53 → `cotas`
+- peldaños (menos 54 y 101) → `peldanos`

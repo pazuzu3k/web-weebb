@@ -359,10 +359,12 @@ function renderSuperficie(el) {
     <div class="home">
       <div class="letreros">${letreros}</div>
       <div class="dino-bloque">
-        <a class="zzz-sueño" href="/">zzz</a>
-        <a class="dino-umbral" href="/cotas/">
-          <img src="/xerox/dinosaurio.jpg" alt="">
-        </a>
+        <div class="dino-marco">
+          <a class="zzz-sueño" href="/">zzz</a>
+          <a class="dino-umbral" href="/cotas/">
+            <img src="/xerox/dinosaurio.jpg" alt="">
+          </a>
+        </div>
       </div>
       <div class="capa-ventanas" data-ventanas></div>
     </div>`;
@@ -434,7 +436,7 @@ async function abrirVentana(capa, id, traer, cerrar) {
   capa.appendChild(win);
   traer(win);
   const cuerpo = win.querySelector("[data-cuerpo]");
-  cuerpo.innerHTML = await cuerpoSeccion(L.seccion);
+  cuerpo.innerHTML = await cuerpoSeccion(L.seccion, L.letra);
   bindSeccionVentana(L.seccion, win, cuerpo);
   dragVentanas(win);
   const cl = win.querySelector(".cerrar");
@@ -442,7 +444,11 @@ async function abrirVentana(capa, id, traer, cerrar) {
   onActivate(cl, () => cerrar(win));
 }
 
-async function cuerpoSeccion(seccion) {
+async function cuerpoSeccion(seccion, letra) {
+  const data = await loadMontaje();
+  const v = ((data && data.ventanas) || {})[letra];
+  const lleno = htmlMontaje(v);
+  if (lleno) return lleno;
   if (seccion === "minuta") {
     tocarPagina("minuta");
     let data;
@@ -735,7 +741,6 @@ function construirRed(cotas, seed) {
     <g class="raiz-g">
       <circle class="raiz-hit" r="18"/>
       <text class="raiz" text-anchor="middle" dy="5">i</text>
-      <text class="deseo" text-anchor="middle" dy="22">DESEO</text>
       <animateTransform attributeName="transform" type="translate" dur="240s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.2;0.4;0.6;0.8;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" values="180 220; 1120 170; 980 690; 210 730; 740 390; 180 220"/>
     </g>
   </svg>`;
@@ -748,6 +753,7 @@ function renderCotas(el) {
       <header class="cab-home">
         ${cabZzz({ invisible: true })}
       </header>
+      <p class="deseo-leyenda" data-deseo hidden>DESEO</p>
       <div class="mapa-wrap" data-mapa></div>
     </div>`;
 }
@@ -765,6 +771,15 @@ async function bindMapa(root) {
     });
   };
   pintar();
+  const deseo = root.querySelector("[data-deseo]");
+  wrap.addEventListener("pointerover", (e) => {
+    if (deseo && e.target.closest(".raiz-g")) deseo.hidden = false;
+  });
+  wrap.addEventListener("pointerout", (e) => {
+    if (deseo && e.target.closest(".raiz-g") && !e.relatedTarget?.closest?.(".raiz-g")) {
+      deseo.hidden = true;
+    }
+  });
   wrap.addEventListener("click", (e) => {
     if (!e.target.closest(".raiz-g")) return;
     e.preventDefault();
@@ -865,7 +880,7 @@ function peldaños() {
       titulo: "",
       tipo: "",
       href: "/peldano/" + n + "/",
-      cls: "hueco",
+      cls: "tramo",
     };
   });
 }
@@ -1096,7 +1111,9 @@ async function renderEnProceso(el, tipo, clave) {
   const lleno = htmlMontaje(bloque);
   el.innerHTML = `
     <article class="pieza en-proceso">
-      ${chromePalabra()}
+      <header class="cab-home">
+        ${cabZzz({ invisible: true })}
+      </header>
       <p class="leyenda-proceso">en proceso</p>
       <div class="hueco-montaje" data-montaje="${tipo}-${clave}">
         ${lleno || "<!-- MONTAJE: public/montaje/contenidos.json → " + tipo + "s." + clave + " -->"}

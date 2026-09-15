@@ -190,27 +190,34 @@ button {
   position: relative;
 }
 
+.dino-marco {
+  position: relative;
+  width: 56.25%;
+  line-height: 0;
+}
+
 .zzz-sueño {
+  position: absolute;
+  left: 28%;
+  top: 22%;
   font-family: var(--cifra);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 300;
   letter-spacing: 0.28em;
-  margin: 0 0 0.15rem;
+  margin: 0;
   line-height: 1;
-  position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .dino-umbral {
-  display: flex;
-  justify-content: center;
+  display: block;
   line-height: 0;
   width: 100%;
 }
 
 .dino-umbral img {
   display: block;
-  width: 56.25%;
+  width: 100%;
   height: auto;
   max-height: 23.6vh;
   object-fit: contain;
@@ -378,18 +385,23 @@ button {
   pointer-events: none;
 }
 
-.red .deseo {
+.deseo-leyenda {
+  position: fixed;
+  top: 1.1rem;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  margin: 0;
+  text-align: center;
   font-family: var(--cifra);
-  font-size: 11px;
+  font-size: 0.95rem;
   font-weight: 400;
-  letter-spacing: 0.18em;
-  fill: var(--tinta);
-  opacity: 0;
+  letter-spacing: 0.22em;
   pointer-events: none;
 }
 
-.raiz-g:hover .deseo {
-  opacity: 1;
+.red .deseo {
+  display: none;
 }
 
 .red .nodos .vacio circle:not(.hit) {
@@ -791,7 +803,7 @@ html[data-pagina="escalera"] #territorio {
   transform-origin: 50% 50%;
   transform-style: preserve-3d;
   transform: translateY(calc((var(--i) - var(--mid, 0)) * var(--peldaño-h)))
-    rotateY(calc((var(--i) - var(--mid, 0)) * -15deg));
+    rotateY(calc((var(--i) - var(--mid, 0)) * -9deg));
 }
 
 .contrahuella,
@@ -824,7 +836,15 @@ html[data-pagina="escalera"] #territorio {
 
 .peldaño-n {
   font-family: var(--cifra);
-  font-size: 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
+.peldaño.tramo .contrahuella,
+.peldaño.s1ento .contrahuella,
+.peldaño.ciento-uno .contrahuella {
+  background: var(--papel);
 }
 
 .peldaño-tit {
@@ -843,7 +863,22 @@ html[data-pagina="escalera"] #territorio {
   text-underline-offset: 0.18em;
 }
 
+.pieza.en-proceso {
+  padding-top: 2.4rem;
+}
+
+.pieza.en-proceso .cab-home {
+  position: sticky;
+  top: 0;
+  padding-left: 0;
+}
+
 .leyenda-proceso {
+  font-family: var(--tipo);
+  font-weight: 300;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  margin: 12vh 0 2rem;
+}
   font-family: var(--tipo);
   font-weight: 300;
   font-size: clamp(1.4rem, 4vw, 2.2rem);
