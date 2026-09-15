@@ -17,8 +17,10 @@ import { Route as ContactoIndexRouteImport } from './routes/contacto.index'
 import { Route as CotaNRouteImport } from './routes/cota.$n'
 import { Route as CotasIndexRouteImport } from './routes/cotas.index'
 import { Route as DirigidoIndexRouteImport } from './routes/dirigido.index'
+import { Route as LetraIdRouteImport } from './routes/letra.$id'
 import { Route as LoopIndexRouteImport } from './routes/loop.index'
 import { Route as MiochisIndexRouteImport } from './routes/miochis.index'
+import { Route as PeldanoNRouteImport } from './routes/peldano.$n'
 import { Route as SeminarioIndexRouteImport } from './routes/seminario.index'
 import { Route as SitioIndexRouteImport } from './routes/sitio.index'
 import { Route as SuperyaIndexRouteImport } from './routes/superya.index'
@@ -67,6 +69,11 @@ const DirigidoIndexRoute = DirigidoIndexRouteImport.update({
   path: '/dirigido/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LetraIdRoute = LetraIdRouteImport.update({
+  id: '/letra/$id',
+  path: '/letra/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoopIndexRoute = LoopIndexRouteImport.update({
   id: '/loop/',
   path: '/loop/',
@@ -75,6 +82,11 @@ const LoopIndexRoute = LoopIndexRouteImport.update({
 const MiochisIndexRoute = MiochisIndexRouteImport.update({
   id: '/miochis/',
   path: '/miochis/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PeldanoNRoute = PeldanoNRouteImport.update({
+  id: '/peldano/$n',
+  path: '/peldano/$n',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SeminarioIndexRoute = SeminarioIndexRouteImport.update({
@@ -119,6 +131,8 @@ export interface FileRoutesByFullPath {
   '/api/presencia': typeof ApiPresenciaRoute
   '/api/visitas': typeof ApiVisitasRoute
   '/cota/$n': typeof CotaNRoute
+  '/letra/$id': typeof LetraIdRoute
+  '/peldano/$n': typeof PeldanoNRoute
   '/antipodas/': typeof AntipodasIndexRoute
   '/contacto/': typeof ContactoIndexRoute
   '/cotas/': typeof CotasIndexRoute
@@ -138,6 +152,8 @@ export interface FileRoutesByTo {
   '/api/presencia': typeof ApiPresenciaRoute
   '/api/visitas': typeof ApiVisitasRoute
   '/cota/$n': typeof CotaNRoute
+  '/letra/$id': typeof LetraIdRoute
+  '/peldano/$n': typeof PeldanoNRoute
   '/antipodas': typeof AntipodasIndexRoute
   '/contacto': typeof ContactoIndexRoute
   '/cotas': typeof CotasIndexRoute
@@ -158,6 +174,8 @@ export interface FileRoutesById {
   '/api/presencia': typeof ApiPresenciaRoute
   '/api/visitas': typeof ApiVisitasRoute
   '/cota/$n': typeof CotaNRoute
+  '/letra/$id': typeof LetraIdRoute
+  '/peldano/$n': typeof PeldanoNRoute
   '/antipodas/': typeof AntipodasIndexRoute
   '/contacto/': typeof ContactoIndexRoute
   '/cotas/': typeof CotasIndexRoute
@@ -179,6 +197,8 @@ export interface FileRouteTypes {
     | '/api/presencia'
     | '/api/visitas'
     | '/cota/$n'
+    | '/letra/$id'
+    | '/peldano/$n'
     | '/antipodas/'
     | '/contacto/'
     | '/cotas/'
@@ -198,6 +218,8 @@ export interface FileRouteTypes {
     | '/api/presencia'
     | '/api/visitas'
     | '/cota/$n'
+    | '/letra/$id'
+    | '/peldano/$n'
     | '/antipodas'
     | '/contacto'
     | '/cotas'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/api/presencia'
     | '/api/visitas'
     | '/cota/$n'
+    | '/letra/$id'
+    | '/peldano/$n'
     | '/antipodas/'
     | '/contacto/'
     | '/cotas/'
@@ -237,6 +261,8 @@ export interface RootRouteChildren {
   ApiPresenciaRoute: typeof ApiPresenciaRoute
   ApiVisitasRoute: typeof ApiVisitasRoute
   CotaNRoute: typeof CotaNRoute
+  LetraIdRoute: typeof LetraIdRoute
+  PeldanoNRoute: typeof PeldanoNRoute
   AntipodasIndexRoute: typeof AntipodasIndexRoute
   ContactoIndexRoute: typeof ContactoIndexRoute
   CotasIndexRoute: typeof CotasIndexRoute
@@ -310,6 +336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DirigidoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/letra/$id': {
+      id: '/letra/$id'
+      path: '/letra/$id'
+      fullPath: '/letra/$id'
+      preLoaderRoute: typeof LetraIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/loop/': {
       id: '/loop/'
       path: '/loop'
@@ -322,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/miochis'
       fullPath: '/miochis/'
       preLoaderRoute: typeof MiochisIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/peldano/$n': {
+      id: '/peldano/$n'
+      path: '/peldano/$n'
+      fullPath: '/peldano/$n'
+      preLoaderRoute: typeof PeldanoNRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seminario/': {
@@ -381,6 +421,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPresenciaRoute: ApiPresenciaRoute,
   ApiVisitasRoute: ApiVisitasRoute,
   CotaNRoute: CotaNRoute,
+  LetraIdRoute: LetraIdRoute,
+  PeldanoNRoute: PeldanoNRoute,
   AntipodasIndexRoute: AntipodasIndexRoute,
   ContactoIndexRoute: ContactoIndexRoute,
   CotasIndexRoute: CotasIndexRoute,

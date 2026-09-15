@@ -4,9 +4,11 @@ type Props = {
   pagina: string;
   cota?: string;
   sesion?: string;
+  letra?: string;
+  peldano?: string;
 };
 
-export function TerritorioHost({ pagina, cota, sesion }: Props) {
+export function TerritorioHost({ pagina, cota, sesion, letra, peldano }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function TerritorioHost({ pagina, cota, sesion }: Props) {
       alive = false;
       stop?.();
     };
-  }, [pagina, cota, sesion]);
+  }, [pagina, cota, sesion, letra, peldano]);
 
   return (
     <div
@@ -32,6 +34,8 @@ export function TerritorioHost({ pagina, cota, sesion }: Props) {
       data-pagina={pagina}
       data-cota={cota ?? ""}
       data-sesion={sesion ?? ""}
+      data-letra={letra ?? ""}
+      data-peldano={peldano ?? ""}
       data-strato={pagina === "cota" ? "vacio" : ""}
     />
   );

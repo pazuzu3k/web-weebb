@@ -177,10 +177,15 @@ function chromePalabra(n) {
   </header>`;
 }
 
-function cabZzz() {
-  return `<div class="cab-zzz">
-    <h1><a href="/">zzz</a></h1>
-    <button type="button" class="atras" data-atras>z</button>
+function cabZzz(opts) {
+  const o = opts || {};
+  const inv = o.invisible ? " cab-invisible" : "";
+  const atras = o.sinAtras
+    ? ""
+    : `<button type="button" class="atras" data-atras>z</button>`;
+  return `<div class="cab-zzz${inv}">
+    <h1><a class="zzz" href="/">zzz</a></h1>
+    ${atras}
   </div>`;
 }
 
@@ -196,39 +201,44 @@ function bindAtras(root) {
 
 const LETREROS = [
   {
-    id: "newsreader",
+    letra: "a",
+    id: "a",
     nombre: "Newsreader",
     face: '"Newsreader", Times, serif',
-    seccion: "minuta",
-    titulo: "01-contingencia",
+    modo: "pagina",
+    href: "/letra/a/",
   },
   {
-    id: "special-elite",
+    letra: "b",
+    id: "b",
     nombre: "Special Elite",
     face: '"Special Elite", cursive',
+    modo: "ventana",
     seccion: "antipodas",
-    titulo: "antípodas",
   },
   {
-    id: "space",
+    letra: "c",
+    id: "c",
     nombre: "Space Mono",
     face: '"Space Mono", ui-monospace, monospace',
-    seccion: "teatro",
-    titulo: "teatro",
+    modo: "pagina",
+    href: "/letra/c/",
   },
   {
-    id: "garamond",
+    letra: "d",
+    id: "d",
     nombre: "EB Garamond",
     face: '"EB Garamond", Times, serif',
-    seccion: "seminario",
-    titulo: "seminario",
+    modo: "pagina",
+    href: "/letra/d/",
   },
   {
-    id: "techno",
+    letra: "e",
+    id: "e",
     nombre: "Techno",
     face: '"Techno", sans-serif',
+    modo: "ventana",
     seccion: "hizo",
-    titulo: "hizo lugar",
   },
 ];
 
@@ -342,18 +352,18 @@ const PIEZAS = {
 function renderSuperficie(el) {
   const letreros = LETREROS.map(
     (L, i) =>
-      `<button type="button" class="letrero" data-letrero="${L.id}" style="--i:${i}">${L.nombre}</button>`,
+      `<button type="button" class="letrero" data-letrero="${L.id}" data-letra="${L.letra}" data-modo="${L.modo}" style="--i:${i}">${L.nombre}</button>`,
   ).join("");
   el.innerHTML = `
     ${filtros()}
     <div class="home">
-      <header class="cab-home">
-        ${cabZzz()}
-      </header>
       <div class="letreros">${letreros}</div>
-      <a class="dino-umbral" href="/cotas/">
-        <img src="/xerox/dinosaurio.jpg" alt="">
-      </a>
+      <div class="dino-bloque">
+        <a class="zzz-sueño" href="/">zzz</a>
+        <a class="dino-umbral" href="/cotas/">
+          <img src="/xerox/dinosaurio.jpg" alt="">
+        </a>
+      </div>
       <div class="capa-ventanas" data-ventanas></div>
     </div>`;
 }
@@ -385,9 +395,13 @@ function bindHome(root) {
   root._homeOff = () => window.removeEventListener("keydown", onEsc);
 
   root.querySelectorAll(".letrero[data-letrero]").forEach((btn) => {
-    onActivate(btn, () =>
-      abrirVentana(capa, btn.getAttribute("data-letrero"), traer, cerrar),
-    );
+    onActivate(btn, () => {
+      const id = btn.getAttribute("data-letrero");
+      const L = LETREROS.find((x) => x.id === id);
+      if (!L) return;
+      if (L.modo === "pagina") ir(L.href);
+      else abrirVentana(capa, id, traer, cerrar);
+    });
   });
 
   capa.addEventListener("pointerdown", (e) => {
@@ -634,11 +648,19 @@ function hiloMental(a, b, rand) {
   const nx = -dy / d;
   const ny = dx / d;
   const side = rand() > 0.5 ? 1 : -1;
-  const bulge = Math.min(90, d * (0.08 + rand() * 0.1)) * side;
+  const bulge = Math.min(240, d * (0.2 + rand() * 0.38)) * side;
+  if (rand() < 0.48) {
+    const b2 = bulge * (0.55 + rand() * 0.7);
+    const c1x = a.x + dx * 0.28 + nx * bulge;
+    const c1y = a.y + dy * 0.28 + ny * bulge;
+    const c2x = a.x + dx * 0.72 - nx * b2;
+    const c2y = a.y + dy * 0.72 - ny * b2;
+    return `M${x1},${y1} C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${x2},${y2}`;
+  }
   const c1x = a.x + dx * 0.32 + nx * bulge;
   const c1y = a.y + dy * 0.32 + ny * bulge;
-  const c2x = a.x + dx * 0.68 + nx * bulge * 0.35;
-  const c2y = a.y + dy * 0.68 + ny * bulge * 0.35;
+  const c2x = a.x + dx * 0.68 + nx * bulge * 0.4;
+  const c2y = a.y + dy * 0.68 + ny * bulge * 0.4;
   return `M${x1},${y1} C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${x2},${y2}`;
 }
 
@@ -682,11 +704,16 @@ function armarHilos(pts, seed) {
       .filter((q) => q.n !== p.n)
       .sort((a, b) => dist(p, a) - dist(p, b));
     add(p, near[0]);
-    if (near[1] && rand() > 0.55) add(p, near[1]);
+    add(p, near[1]);
+    if (near[2] && rand() > 0.4) add(p, near[2]);
+  }
+
+  for (let i = 0; i < 22; i++) {
+    add(pts[Math.floor(rand() * pts.length)], pts[Math.floor(rand() * pts.length)]);
   }
 
   return pares
-    .map(([a, b]) => `<path class="hilo" d="${hiloMental(a, b, rand)}" stroke-width="1.5"/>`)
+    .map(([a, b]) => `<path class="hilo" d="${hiloMental(a, b, rand)}" stroke-width="1.45"/>`)
     .join("");
 }
 
@@ -694,16 +721,11 @@ function construirRed(cotas, seed) {
   const pts = layoutCotas();
   const nodos = pts
     .map((p) => {
-      const meta = cotas[p.n] || {};
-      const ocupada = meta.estado === "ocupada";
-      const href = ocupada && meta.abre ? meta.abre : "/cota/" + p.n + "/";
-      const pieza = PIEZAS[p.n];
-      const label = pieza && p.n !== 54 ? pieza.titulo : "";
-      return `<a href="${href}" data-cota="${p.n}" class="${ocupada ? "ocupada" : "vacio"}">
+      const href = p.n === 54 ? "/cota/54/" : "/cota/" + p.n + "/";
+      return `<a href="${href}" data-cota="${p.n}" class="vacio">
         <circle class="hit" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="18"/>
-        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${ocupada ? 4.5 : 2.6}"/>
+        <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.6"/>
         <text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dy="-8">${p.n}</text>
-        ${label ? `<text class="nom" x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dy="16">${label}</text>` : ""}
       </a>`;
     })
     .join("");
@@ -713,6 +735,7 @@ function construirRed(cotas, seed) {
     <g class="raiz-g">
       <circle class="raiz-hit" r="18"/>
       <text class="raiz" text-anchor="middle" dy="5">i</text>
+      <text class="deseo" text-anchor="middle" dy="22">DESEO</text>
       <animateTransform attributeName="transform" type="translate" dur="240s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.2;0.4;0.6;0.8;1" keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1" values="180 220; 1120 170; 980 690; 210 730; 740 390; 180 220"/>
     </g>
   </svg>`;
@@ -723,7 +746,7 @@ function renderCotas(el) {
     ${filtros()}
     <div class="pagina-cotas">
       <header class="cab-home">
-        ${cabZzz()}
+        ${cabZzz({ invisible: true })}
       </header>
       <div class="mapa-wrap" data-mapa></div>
     </div>`;
@@ -816,32 +839,35 @@ function ventanaDeNivel(n, h) {
 }
 
 function peldaños() {
-  const ocupadas = Object.keys(PIEZAS)
-    .map(Number)
-    .sort((a, b) => b - a);
-  return [
-    { n: "", titulo: "red", tipo: "", href: "/cotas/", cls: "hacia-red" },
-    ...ocupadas.map((n) => {
-      const p = PIEZAS[n];
-      if (n === 54) {
-        return {
-          n: "54",
-          titulo: "",
-          tipo: "",
-          href: "#s1ento54",
-          cls: "s1ento",
-          revela: "@s1ento54",
-        };
-      }
+  return Array.from({ length: 101 }, (_, i) => {
+    const n = i + 1;
+    if (n === 54) {
       return {
-        n: String(n).padStart(2, "0"),
-        titulo: p.titulo,
-        tipo: p.tipo,
-        href: p.href,
-        cls: p.cls,
+        n: "54",
+        titulo: "",
+        tipo: "",
+        href: "#s1ento54",
+        cls: "s1ento",
+        revela: "@s1ento54_",
       };
-    }),
-  ];
+    }
+    if (n === 101) {
+      return {
+        n: "101",
+        titulo: "",
+        tipo: "",
+        href: "#i-regreso",
+        cls: "ciento-uno",
+      };
+    }
+    return {
+      n: String(n),
+      titulo: "",
+      tipo: "",
+      href: "/peldano/" + n + "/",
+      cls: "hueco",
+    };
+  });
 }
 
 function bloquePeldaño(p, i) {
@@ -868,17 +894,17 @@ function renderEscalera(el) {
   el.setAttribute("data-strato", "intervencion");
   el.setAttribute("data-estado", "ocupada");
   const pasos = peldaños();
-  const vis = pasos.length * 3;
+  const vis = Math.min(42, pasos.length * 3);
   const bloques = Array.from({ length: vis }, (_, k) =>
     bloquePeldaño(pasos[k % pasos.length], k),
   ).join("");
   el.innerHTML = `
     <div class="pagina-escalera" style="--n:${vis}">
       <header class="cab-home cab-escalera">
-        ${cabZzz()}
+        ${cabZzz({ invisible: true })}
       </header>
       <div class="escalera" data-escalera>${bloques}</div>
-      <p class="s1ento-msg" data-s1ento hidden>@s1ento54</p>
+      <p class="s1ento-msg" data-s1ento hidden>@s1ento54_</p>
     </div>`;
   bindEscalera(el, pasos);
 }
@@ -888,13 +914,14 @@ function bindEscalera(el, pasos) {
   const stair = el.querySelector("[data-escalera]");
   if (!stair || !page) return;
   const ciclo = pasos.length;
-  const vis = ciclo * 3;
+  const vis = Math.min(42, ciclo * 3);
   const nodes = [...stair.querySelectorAll(".peldaño")];
-  let t = 0;
+  let t = 53;
   let touching = false;
   let lastY = 0;
   let pending = false;
   let revelado = false;
+  let i101 = false;
   const msg = el.querySelector("[data-s1ento]");
 
   const paint = () => {
@@ -905,13 +932,24 @@ function bindEscalera(el, pasos) {
       const p = pasos[((idx % ciclo) + ciclo) % ciclo];
       node.style.setProperty("--i", String(idx));
       node.setAttribute("href", p.href || "#");
-      node.className = "peldaño " + (p.cls || "") + (p.revela && revelado ? " abierto" : "");
+      let extra = "";
+      if (p.cls === "s1ento" && revelado) extra = " abierto";
+      if (p.cls === "ciento-uno" && i101) extra = " abierto";
+      node.className = "peldaño " + (p.cls || "") + extra;
       const num = node.querySelector(".peldaño-n");
       const tit = node.querySelector(".peldaño-tit");
       const tipo = node.querySelector(".peldaño-tipo");
       if (num) num.textContent = p.n;
-      if (tit) tit.textContent = p.revela && revelado ? p.revela : p.titulo;
-      if (tipo) tipo.textContent = p.tipo;
+      if (tipo) tipo.textContent = "";
+      if (tit) {
+        if (p.cls === "s1ento" && revelado) {
+          tit.innerHTML = `<span class="ig">@s1ento54_</span>`;
+        } else if (p.cls === "ciento-uno" && i101) {
+          tit.innerHTML = `<em class="i-regreso">i</em>`;
+        } else {
+          tit.textContent = "";
+        }
+      }
       const d = Math.abs(idx - t);
       node.style.opacity = d > vis / 2 - 1.5 ? "0" : "";
       node.style.pointerEvents = d > vis / 2 - 2 ? "none" : "auto";
@@ -968,7 +1006,21 @@ function bindEscalera(el, pasos) {
     if (!a) return;
     if (a.classList.contains("s1ento")) {
       e.preventDefault();
+      if (revelado && e.target.closest(".ig")) {
+        location.href = "https://www.instagram.com/s1ento54_";
+        return;
+      }
       revelado = true;
+      paint();
+      return;
+    }
+    if (a.classList.contains("ciento-uno")) {
+      e.preventDefault();
+      if (i101 && e.target.closest(".i-regreso")) {
+        ir("/cotas/");
+        return;
+      }
+      i101 = true;
       paint();
     }
   };
@@ -998,33 +1050,58 @@ function renderCota(el, n, meta) {
     renderEscalera(el);
     return;
   }
-  const estado = meta.estado || "vacio";
-  const abre = meta.abre || "";
-  const abreEstado = meta.abreEstado || "apagado";
-  const dis =
-    abreEstado === "apagado" ? `tabindex="-1" aria-disabled="true"` : `tabindex="0"`;
-  el.setAttribute("data-pagina", "cota");
-  el.setAttribute("data-cota", n);
-  el.setAttribute("data-strato", estado === "ocupada" ? "intervencion" : "vacio");
-  el.setAttribute("data-estado", estado);
-  el.setAttribute("data-abre", abre);
-  el.setAttribute("data-abre-estado", abreEstado);
-  const pieza = PIEZAS[Number(n)];
-  const titulo = pieza ? `<h2>${pieza.titulo}</h2><p class="tipo">${pieza.tipo}</p>` : "";
-  el.innerHTML = `
-    <article class="pieza ${estado === "vacio" ? "vacio" : ""}">
-      ${chromePalabra(n)}
-      ${titulo}
-      <p class="cifra">${n}</p>
-      <button type="button" class="umbral-abre" data-abre="${abre}" data-abre-estado="${abreEstado}" ${dis} aria-label=""></button>
-      <a class="volver" href="/">↑</a>
-    </article>
-    <!-- MONTAJE: rellenar cota ${n}; cuando haya destino, data-abre y encender umbral -->
-  `;
-  if (abreEstado === "encendido" && abre) {
-    const u = el.querySelector("[data-umbral], .umbral-abre");
-    onActivate(u, () => ir(abre));
+  renderEnProceso(el, "cota", String(n));
+}
+
+let MONTAJE = null;
+async function loadMontaje() {
+  if (MONTAJE) return MONTAJE;
+  try {
+    const r = await fetch("/montaje/contenidos.json");
+    MONTAJE = await r.json();
+  } catch {
+    MONTAJE = { letras: {}, cotas: {}, peldanos: {} };
   }
+  return MONTAJE;
+}
+
+function htmlMontaje(bloque) {
+  const b = bloque || {};
+  const texto = b.texto
+    ? `<div class="cuerpo-montaje">${b.texto}</div>`
+    : "";
+  const imgs = (b.imagenes || [])
+    .filter(Boolean)
+    .map((src) => `<img class="img-montaje" src="${src}" alt="">`)
+    .join("");
+  const pdfs = (b.pdfs || [])
+    .filter(Boolean)
+    .map((src) => `<a class="pdf-montaje" href="${src}">${src.split("/").pop()}</a>`)
+    .join("");
+  return texto + imgs + pdfs;
+}
+
+async function renderEnProceso(el, tipo, clave) {
+  el.setAttribute("data-pagina", tipo);
+  if (tipo === "cota") el.setAttribute("data-cota", clave);
+  if (tipo === "letra") el.setAttribute("data-letra", clave);
+  if (tipo === "peldano") el.setAttribute("data-peldano", clave);
+  const data = await loadMontaje();
+  const bloque =
+    tipo === "letra"
+      ? (data.letras || {})[clave]
+      : tipo === "peldano"
+        ? (data.peldanos || {})[clave]
+        : (data.cotas || {})[clave];
+  const lleno = htmlMontaje(bloque);
+  el.innerHTML = `
+    <article class="pieza en-proceso">
+      ${chromePalabra()}
+      <p class="leyenda-proceso">en proceso</p>
+      <div class="hueco-montaje" data-montaje="${tipo}-${clave}">
+        ${lleno || "<!-- MONTAJE: public/montaje/contenidos.json → " + tipo + "s." + clave + " -->"}
+      </div>
+    </article>`;
 }
 
 function renderSeminario(el) {
@@ -1392,6 +1469,20 @@ export function boot(el) {
       tocarCota(n);
       const cotas = await loadCotas();
       renderCota(el, n, cotas[n] || { estado: "vacio", abre: "", abreEstado: "apagado" });
+    } else if (pagina === "letra") {
+      let id = el.getAttribute("data-letra") || "";
+      if (!id) {
+        const m = location.pathname.match(/\/letra\/([a-e])/);
+        id = m ? m[1] : "a";
+      }
+      await renderEnProceso(el, "letra", id);
+    } else if (pagina === "peldano") {
+      let n = el.getAttribute("data-peldano") || "";
+      if (!n) {
+        const m = location.pathname.match(/\/peldano\/(\d+)/);
+        n = m ? m[1] : "1";
+      }
+      await renderEnProceso(el, "peldano", String(n));
     } else if (pagina === "seminario") renderSeminario(el);
     else if (pagina === "minuta") await renderMinuta(el);
     else if (pagina === "antipodas") renderAntipodas(el);

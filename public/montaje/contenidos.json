@@ -1,0 +1,783 @@
+{
+  "letras": {
+    "a": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "c": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "d": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    }
+  },
+  "cotas": {
+    "1": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "2": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "3": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "4": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "5": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "6": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "7": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "8": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "9": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "10": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "11": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "12": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "13": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "14": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "15": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "16": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "17": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "18": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "19": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "20": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "21": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "22": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "23": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "24": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "25": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "26": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "27": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "28": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "29": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "30": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "31": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "32": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "33": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "34": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "35": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "36": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "37": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "38": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "39": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "40": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "41": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "42": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "43": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "44": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "45": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "46": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "47": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "48": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "49": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "50": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "51": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "52": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "53": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    }
+  },
+  "peldanos": {
+    "1": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "2": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "3": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "4": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "5": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "6": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "7": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "8": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "9": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "10": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "11": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "12": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "13": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "14": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "15": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "16": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "17": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "18": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "19": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "20": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "21": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "22": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "23": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "24": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "25": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "26": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "27": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "28": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "29": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "30": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "31": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "32": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "33": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "34": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "35": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "36": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "37": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "38": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "39": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "40": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "41": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "42": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "43": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "44": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "45": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "46": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "47": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "48": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "49": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "50": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "51": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "52": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "53": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "55": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "56": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "57": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "58": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "59": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "60": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "61": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "62": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "63": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "64": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "65": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "66": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "67": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "68": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "69": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "70": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "71": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "72": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "73": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "74": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "75": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "76": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "77": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "78": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "79": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "80": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "81": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "82": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "83": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "84": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "85": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "86": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "87": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "88": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "89": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "90": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "91": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "92": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "93": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "94": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "95": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "96": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "97": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "98": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "99": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    },
+    "100": {
+      "texto": "",
+      "imagenes": [],
+      "pdfs": []
+    }
+  }
+}

@@ -121,6 +121,18 @@ button {
   min-height: 52vh;
 }
 
+.cab-invisible,
+.cab-invisible a,
+.cab-invisible button,
+.cab-invisible h1 {
+  color: transparent !important;
+  opacity: 0;
+}
+
+.cab-invisible {
+  pointer-events: auto;
+}
+
 .letrero {
   display: block;
   width: max-content;
@@ -132,48 +144,75 @@ button {
   border: 0;
   cursor: pointer;
   word-break: break-word;
+  font-weight: 300;
 }
 
 .letrero:hover {
   color: var(--gris);
 }
 
-.letrero[data-letrero="newsreader"] {
+.letrero[data-letra="a"] {
   font-family: "Newsreader", Times, serif;
-  font-size: clamp(3.4rem, 13vw, 8.4rem);
+  font-size: clamp(2.55rem, 9.75vw, 6.3rem);
+  font-weight: 300;
 }
-.letrero[data-letrero="special-elite"] {
+.letrero[data-letra="b"] {
   font-family: "Special Elite", cursive;
-  font-size: clamp(2.6rem, 9vw, 6.2rem);
+  font-size: clamp(1.95rem, 6.75vw, 4.65rem);
+  font-weight: 300;
 }
-.letrero[data-letrero="space"] {
+.letrero[data-letra="c"] {
   font-family: "Space Mono", ui-monospace, monospace;
-  font-size: clamp(2.1rem, 7.4vw, 5.2rem);
+  font-size: clamp(1.58rem, 5.55vw, 3.9rem);
   letter-spacing: -0.04em;
+  font-weight: 300;
 }
-.letrero[data-letrero="garamond"] {
+.letrero[data-letra="d"] {
   font-family: "EB Garamond", Times, serif;
-  font-size: clamp(3.2rem, 11vw, 7.2rem);
+  font-size: clamp(2.4rem, 8.25vw, 5.4rem);
+  font-weight: 300;
 }
-.letrero[data-letrero="techno"] {
+.letrero[data-letra="e"] {
   font-family: "Techno", sans-serif;
-  font-size: clamp(2.8rem, 10vw, 6.6rem);
+  font-size: clamp(2.1rem, 7.5vw, 4.95rem);
   letter-spacing: 0.04em;
+  font-weight: 300;
+}
+
+.dino-bloque {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding-bottom: 0;
+  position: relative;
+}
+
+.zzz-sueño {
+  font-family: var(--cifra);
+  font-size: 0.95rem;
+  font-weight: 300;
+  letter-spacing: 0.28em;
+  margin: 0 0 0.15rem;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
 }
 
 .dino-umbral {
   display: flex;
   justify-content: center;
-  margin-top: auto;
   line-height: 0;
   width: 100%;
 }
 
 .dino-umbral img {
   display: block;
-  width: 75%;
+  width: 56.25%;
   height: auto;
-  max-height: 31.5vh;
+  max-height: 23.6vh;
   object-fit: contain;
   object-position: bottom center;
   filter: grayscale(1) contrast(1.35);
@@ -279,7 +318,7 @@ button {
 .red .raiz {
   font-family: var(--cifra);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   fill: var(--tinta);
   pointer-events: none;
 }
@@ -320,21 +359,37 @@ button {
 .red .nodos text {
   font-family: var(--cifra);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   fill: var(--tinta);
   pointer-events: none;
-}
-
-.red .nodos .nom {
-  font-size: 10px;
-  font-weight: 400;
-  fill: var(--gris);
 }
 
 .red .nodos .vacio text {
   fill: #555;
   font-weight: 400;
   font-size: 15px;
+}
+
+.red .raiz {
+  font-family: var(--cifra);
+  font-size: 18px;
+  font-weight: 400;
+  fill: var(--tinta);
+  pointer-events: none;
+}
+
+.red .deseo {
+  font-family: var(--cifra);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  fill: var(--tinta);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.raiz-g:hover .deseo {
+  opacity: 1;
 }
 
 .red .nodos .vacio circle:not(.hit) {
@@ -788,6 +843,49 @@ html[data-pagina="escalera"] #territorio {
   text-underline-offset: 0.18em;
 }
 
+.leyenda-proceso {
+  font-family: var(--tipo);
+  font-weight: 300;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  margin: 12vh 0 2rem;
+}
+
+.hueco-montaje {
+  min-height: 8rem;
+}
+
+.cuerpo-montaje {
+  max-width: 42rem;
+  line-height: 1.45;
+}
+
+.img-montaje {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  filter: grayscale(1);
+}
+
+.pdf-montaje {
+  display: block;
+  font-family: var(--cifra);
+  font-size: 0.85rem;
+  margin: 0.4rem 0;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.peldaño .i-regreso {
+  font-style: italic;
+  font-family: var(--tipo);
+  font-size: 1.1rem;
+}
+
+.peldaño .ig {
+  font-family: var(--cifra);
+}
+
 .s1ento-msg {
   position: fixed;
   left: 1.4rem;
@@ -876,7 +974,7 @@ html[data-pagina="escalera"] #territorio {
     min-height: 48vh;
   }
   .dino-umbral img {
-    max-height: 25.5vh;
+    max-height: 19.1vh;
   }
   .ventana.flotante {
     left: 4vw !important;
