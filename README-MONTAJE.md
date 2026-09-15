@@ -1,4 +1,4 @@
-# Cómo llenar el sitio (paso a paso, para quien nunca tocó código)
+# Cómo llenar el sitio (paso a paso Miochiton)
 
 No hay que programar. Solo abrís archivos, pegás texto y arrastrás fotos.
 
