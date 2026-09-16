@@ -1,6 +1,6 @@
 # Cómo llenar el sitio (paso a paso Miochiton)
 
-No hay que programar. Solo abrís archivos, pegás texto y arrastrás fotos.
+No hay que programar. Solo abres archivos, pegás texto y arrastrás fotos.
 
 Hay **un archivo de control** y **una carpeta para las fotos/PDFs**.
 
