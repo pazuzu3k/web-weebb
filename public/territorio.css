@@ -333,7 +333,263 @@ button {
 .mapa-wrap {
   width: 100%;
   min-height: calc(100dvh - 3rem);
-  overflow-x: auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.campo {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: calc(100dvh - 3rem);
+}
+
+.campo .cota-curva {
+  fill: none;
+  stroke: #1a1a1a;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+html[data-deseo] .campo .cota-curva {
+  stroke: #0b3;
+}
+
+.campo .hilo {
+  fill: none;
+  stroke: #444;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.campo .hilo.vivo {
+  stroke: #333;
+  opacity: 0.32;
+}
+
+.campo .hilo.traza {
+  stroke: #777;
+  opacity: 0.18;
+  stroke-dasharray: 3 7;
+}
+
+.campo .hilo.foco {
+  opacity: 1;
+  stroke: #111;
+}
+
+html[data-deseo] .campo .hilo.vivo {
+  stroke: #062;
+}
+
+.campo .nodo {
+  cursor: pointer;
+}
+
+.campo .nodo .hit {
+  fill: transparent;
+}
+
+.campo .nodo .dot {
+  fill: #111;
+}
+
+.campo .nodo.vacio .dot {
+  fill: #666;
+}
+
+.campo .nodo.concepto .dot {
+  fill: #111;
+}
+
+.campo .nodo .num,
+.campo .nodo .nom {
+  font-family: var(--cifra);
+  pointer-events: none;
+}
+
+.campo .nodo .num {
+  font-size: 15px;
+  fill: #555;
+}
+
+.campo .nodo.ocupada .num {
+  fill: #111;
+  font-size: 17px;
+}
+
+.campo .nodo .nom {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  fill: #111;
+  opacity: 0;
+}
+
+.campo .nodo.concepto .nom {
+  opacity: 0.85;
+  font-size: 10px;
+}
+
+.campo .nodo.foco .nom,
+.campo .nodo:hover .nom {
+  opacity: 1;
+}
+
+.campo .nodo.foco .num,
+.campo .nodo:hover .num {
+  fill: #000;
+}
+
+.campo .raiz-g {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.campo .raiz-hit {
+  fill: transparent;
+}
+
+.campo .raiz {
+  font-family: var(--cifra);
+  font-size: 18px;
+  fill: var(--tinta);
+  pointer-events: none;
+}
+
+.hex-layer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 35;
+}
+
+.hex-layer.off {
+  opacity: 0;
+}
+
+.hex-layer.debil,
+.hex-layer.activo {
+  opacity: 1;
+}
+
+.hex-layer.debil .petal,
+.hex-layer.activo .petal {
+  pointer-events: auto;
+}
+
+.hex-layer .hexagrama {
+  width: min(42vw, 240px);
+  height: min(42vw, 240px);
+  overflow: visible;
+}
+
+.hex-layer .hex-seg {
+  fill: none;
+  stroke: #111;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 420ms ease;
+}
+
+.hex-layer.debil .hex-seg {
+  stroke-dashoffset: 0;
+  opacity: 0.22;
+}
+
+.hex-layer.activo .hex-seg {
+  opacity: 1;
+}
+
+.hex-layer.activo .hex-seg.drawn {
+  stroke-dashoffset: 0;
+}
+
+html[data-deseo] .hex-layer .hex-seg {
+  stroke: #0b3;
+}
+
+.hex-layer.off .hex-seg {
+  opacity: 0;
+}
+
+.hex-layer .petal {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.hex-layer .petal ellipse {
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 1.1;
+}
+
+.hex-layer .petal.on ellipse {
+  fill: #111;
+}
+
+html[data-deseo] .hex-layer .petal.on ellipse {
+  fill: #0b3;
+  stroke: #0b3;
+}
+
+.hex-layer.off .petal {
+  pointer-events: none;
+}
+
+.hex-layer.off .petal ellipse,
+.hex-layer.off .flor-cor {
+  opacity: 0;
+}
+
+.hex-layer.debil .petal ellipse,
+.hex-layer.activo .petal ellipse {
+  opacity: 1;
+}
+
+.flor-cor {
+  fill: #111;
+}
+
+html[data-deseo] .flor-cor {
+  fill: #0b3;
+}
+
+.nodo-cifra {
+  position: fixed;
+  z-index: 45;
+  margin: 0;
+  font-family: var(--cifra);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+  color: #111;
+}
+
+.mapa-wrap.deseando {
+  cursor: wait;
+}
+
+@media (max-width: 640px) {
+  .campo .nodo .nom {
+    font-size: 8px;
+  }
+
+  .hex-layer .hexagrama {
+    width: min(70vw, 220px);
+    height: min(70vw, 220px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hex-layer .hex-seg {
+    transition: none;
+  }
 }
 
 .red {
@@ -1056,5 +1312,137 @@ html[data-pagina="escalera"] #territorio {
   }
   .raiz-g animateTransform {
     display: none;
+  }
+}
+
+.pieza.diario .cifra {
+  margin-top: 2vh;
+  margin-bottom: 1.4rem;
+}
+
+.hoja-diario {
+  max-width: 38rem;
+}
+
+.hoja-diario textarea {
+  display: block;
+  width: 100%;
+  min-height: 10rem;
+  margin: 0 0 1.2rem;
+  padding: 0.4rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--gris-claro);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--tipo);
+  font-size: 1.12rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.hoja-diario textarea:focus {
+  outline: none;
+  border-bottom-color: var(--tinta);
+}
+
+.adjunto-zona {
+  min-height: 44px;
+  margin: 0 0 1.2rem;
+}
+
+.adjunto-zona.sobre {
+  outline: 1px dashed var(--tinta);
+  outline-offset: 6px;
+}
+
+.hoja-diario .clip {
+  font-family: var(--cifra);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.lista-adj {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  font-family: var(--cifra);
+  font-size: 0.78rem;
+}
+
+.lista-adj li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  min-height: 36px;
+}
+
+.lista-adj button {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 1.1rem;
+}
+
+.hoja-diario .dejar {
+  font-family: var(--cifra);
+  font-size: 1.6rem;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.hoja-diario.enviando {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.entradas {
+  max-width: 38rem;
+  margin-top: 6vh;
+}
+
+.entrada-diario {
+  position: relative;
+  margin: 0 0 4.2rem;
+  padding-right: 2.4rem;
+}
+
+.entrada-diario .borrar-entrada {
+  position: absolute;
+  top: -0.35rem;
+  right: 0;
+  min-width: 44px;
+  min-height: 44px;
+  font-family: var(--cifra);
+  font-size: 1.05rem;
+  line-height: 1;
+  opacity: 0.35;
+}
+
+.entrada-diario .borrar-entrada:hover,
+.entrada-diario .borrar-entrada:focus-visible {
+  opacity: 1;
+}
+
+.entrada-diario.saliendo {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.entrada-diario .cuando {
+  font-family: var(--cifra);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  opacity: 0.55;
+  margin: 0 0 0.7rem;
+}
+
+@media (max-width: 640px) {
+  .hoja-diario textarea {
+    font-size: 16px;
   }
 }

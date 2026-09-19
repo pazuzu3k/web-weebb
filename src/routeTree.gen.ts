@@ -25,8 +25,10 @@ import { Route as SeminarioIndexRouteImport } from './routes/seminario.index'
 import { Route as SitioIndexRouteImport } from './routes/sitio.index'
 import { Route as SuperyaIndexRouteImport } from './routes/superya.index'
 import { Route as TeatroIndexRouteImport } from './routes/teatro.index'
+import { Route as ApiDiarioIndexRouteImport } from './routes/api/diario.index'
 import { Route as DirigidoHizoLugarIndexRouteImport } from './routes/dirigido.hizo-lugar.index'
 import { Route as SeminarioEnigmaOjoIndexRouteImport } from './routes/seminario.enigma-ojo.index'
+import { Route as ApiDiarioArchivoIdRouteImport } from './routes/api/diario.archivo.$id'
 import { Route as SeminarioSesiones01ContingenciaIndexRouteImport } from './routes/seminario.sesiones.01-contingencia.index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -109,6 +111,11 @@ const TeatroIndexRoute = TeatroIndexRouteImport.update({
   path: '/teatro/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDiarioIndexRoute = ApiDiarioIndexRouteImport.update({
+  id: '/api/diario/',
+  path: '/api/diario/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DirigidoHizoLugarIndexRoute = DirigidoHizoLugarIndexRouteImport.update({
   id: '/dirigido/hizo-lugar/',
   path: '/dirigido/hizo-lugar/',
@@ -117,6 +124,11 @@ const DirigidoHizoLugarIndexRoute = DirigidoHizoLugarIndexRouteImport.update({
 const SeminarioEnigmaOjoIndexRoute = SeminarioEnigmaOjoIndexRouteImport.update({
   id: '/seminario/enigma-ojo/',
   path: '/seminario/enigma-ojo/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDiarioArchivoIdRoute = ApiDiarioArchivoIdRouteImport.update({
+  id: '/api/diario/archivo/$id',
+  path: '/api/diario/archivo/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SeminarioSesiones01ContingenciaIndexRoute =
@@ -143,8 +155,10 @@ export interface FileRoutesByFullPath {
   '/sitio/': typeof SitioIndexRoute
   '/superya/': typeof SuperyaIndexRoute
   '/teatro/': typeof TeatroIndexRoute
+  '/api/diario/': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar/': typeof DirigidoHizoLugarIndexRoute
   '/seminario/enigma-ojo/': typeof SeminarioEnigmaOjoIndexRoute
+  '/api/diario/archivo/$id': typeof ApiDiarioArchivoIdRoute
   '/seminario/sesiones/01-contingencia/': typeof SeminarioSesiones01ContingenciaIndexRoute
 }
 export interface FileRoutesByTo {
@@ -164,8 +178,10 @@ export interface FileRoutesByTo {
   '/sitio': typeof SitioIndexRoute
   '/superya': typeof SuperyaIndexRoute
   '/teatro': typeof TeatroIndexRoute
+  '/api/diario': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar': typeof DirigidoHizoLugarIndexRoute
   '/seminario/enigma-ojo': typeof SeminarioEnigmaOjoIndexRoute
+  '/api/diario/archivo/$id': typeof ApiDiarioArchivoIdRoute
   '/seminario/sesiones/01-contingencia': typeof SeminarioSesiones01ContingenciaIndexRoute
 }
 export interface FileRoutesById {
@@ -186,8 +202,10 @@ export interface FileRoutesById {
   '/sitio/': typeof SitioIndexRoute
   '/superya/': typeof SuperyaIndexRoute
   '/teatro/': typeof TeatroIndexRoute
+  '/api/diario/': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar/': typeof DirigidoHizoLugarIndexRoute
   '/seminario/enigma-ojo/': typeof SeminarioEnigmaOjoIndexRoute
+  '/api/diario/archivo/$id': typeof ApiDiarioArchivoIdRoute
   '/seminario/sesiones/01-contingencia/': typeof SeminarioSesiones01ContingenciaIndexRoute
 }
 export interface FileRouteTypes {
@@ -209,8 +227,10 @@ export interface FileRouteTypes {
     | '/sitio/'
     | '/superya/'
     | '/teatro/'
+    | '/api/diario/'
     | '/dirigido/hizo-lugar/'
     | '/seminario/enigma-ojo/'
+    | '/api/diario/archivo/$id'
     | '/seminario/sesiones/01-contingencia/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -230,8 +250,10 @@ export interface FileRouteTypes {
     | '/sitio'
     | '/superya'
     | '/teatro'
+    | '/api/diario'
     | '/dirigido/hizo-lugar'
     | '/seminario/enigma-ojo'
+    | '/api/diario/archivo/$id'
     | '/seminario/sesiones/01-contingencia'
   id:
     | '__root__'
@@ -251,8 +273,10 @@ export interface FileRouteTypes {
     | '/sitio/'
     | '/superya/'
     | '/teatro/'
+    | '/api/diario/'
     | '/dirigido/hizo-lugar/'
     | '/seminario/enigma-ojo/'
+    | '/api/diario/archivo/$id'
     | '/seminario/sesiones/01-contingencia/'
   fileRoutesById: FileRoutesById
 }
@@ -273,8 +297,10 @@ export interface RootRouteChildren {
   SitioIndexRoute: typeof SitioIndexRoute
   SuperyaIndexRoute: typeof SuperyaIndexRoute
   TeatroIndexRoute: typeof TeatroIndexRoute
+  ApiDiarioIndexRoute: typeof ApiDiarioIndexRoute
   DirigidoHizoLugarIndexRoute: typeof DirigidoHizoLugarIndexRoute
   SeminarioEnigmaOjoIndexRoute: typeof SeminarioEnigmaOjoIndexRoute
+  ApiDiarioArchivoIdRoute: typeof ApiDiarioArchivoIdRoute
   SeminarioSesiones01ContingenciaIndexRoute: typeof SeminarioSesiones01ContingenciaIndexRoute
 }
 
@@ -392,6 +418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeatroIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/diario/': {
+      id: '/api/diario/'
+      path: '/api/diario'
+      fullPath: '/api/diario/'
+      preLoaderRoute: typeof ApiDiarioIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dirigido/hizo-lugar/': {
       id: '/dirigido/hizo-lugar/'
       path: '/dirigido/hizo-lugar'
@@ -404,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/seminario/enigma-ojo'
       fullPath: '/seminario/enigma-ojo/'
       preLoaderRoute: typeof SeminarioEnigmaOjoIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/diario/archivo/$id': {
+      id: '/api/diario/archivo/$id'
+      path: '/api/diario/archivo/$id'
+      fullPath: '/api/diario/archivo/$id'
+      preLoaderRoute: typeof ApiDiarioArchivoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seminario/sesiones/01-contingencia/': {
@@ -433,8 +473,10 @@ const rootRouteChildren: RootRouteChildren = {
   SitioIndexRoute: SitioIndexRoute,
   SuperyaIndexRoute: SuperyaIndexRoute,
   TeatroIndexRoute: TeatroIndexRoute,
+  ApiDiarioIndexRoute: ApiDiarioIndexRoute,
   DirigidoHizoLugarIndexRoute: DirigidoHizoLugarIndexRoute,
   SeminarioEnigmaOjoIndexRoute: SeminarioEnigmaOjoIndexRoute,
+  ApiDiarioArchivoIdRoute: ApiDiarioArchivoIdRoute,
   SeminarioSesiones01ContingenciaIndexRoute:
     SeminarioSesiones01ContingenciaIndexRoute,
 }

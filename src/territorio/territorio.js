@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { startPresence } from "./presence.js";
+import { mountAfecciones } from "./afecciones.js";
 
 const HUELLAS = "smioochy-huellas";
 const ENIGMA = "smioochy-enigma";
@@ -762,32 +763,12 @@ async function bindMapa(root) {
   const wrap = root.querySelector("[data-mapa]");
   if (!wrap) return;
   const cotas = await loadCotas();
-  let seed = 0;
-  const pintar = () => {
-    wrap.innerHTML = construirRed(cotas, seed);
-    wrap.querySelectorAll("a[data-cota]").forEach((a) => {
-      const n = a.getAttribute("data-cota");
-      a.addEventListener("click", () => tocarCota(n));
-    });
-  };
-  pintar();
-  const deseo = root.querySelector("[data-deseo]");
-  wrap.addEventListener("pointerover", (e) => {
-    if (deseo && e.target.closest(".raiz-g")) deseo.hidden = false;
+  const stop = mountAfecciones(wrap, {
+    cotas,
+    onCota: (n) => tocarCota(n),
+    ir,
   });
-  wrap.addEventListener("pointerout", (e) => {
-    if (deseo && e.target.closest(".raiz-g") && !e.relatedTarget?.closest?.(".raiz-g")) {
-      deseo.hidden = true;
-    }
-  });
-  wrap.addEventListener("click", (e) => {
-    if (!e.target.closest(".raiz-g")) return;
-    e.preventDefault();
-    seed += 1;
-    const pts = layoutCotas();
-    const g = wrap.querySelector(".hilos");
-    if (g) g.innerHTML = armarHilos(pts, seed);
-  });
+  root._mapaOff = typeof stop === "function" ? stop : () => {};
 }
 
 function ventana(opts) {
@@ -864,6 +845,15 @@ function peldaños() {
         href: "#s1ento54",
         cls: "s1ento",
         revela: "@s1ento54_",
+      };
+    }
+    if (n === 55) {
+      return {
+        n: "55",
+        titulo: "",
+        tipo: "",
+        href: "/peldano/55/",
+        cls: "diario",
       };
     }
     if (n === 101) {
@@ -1096,7 +1086,195 @@ function htmlMontaje(bloque) {
   return texto + imgs + pdfs;
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (ch) => {
+    if (ch === "&") return "\u0026amp;";
+    if (ch === "<") return "\u0026lt;";
+    if (ch === ">") return "\u0026gt;";
+    return "\u0026quot;";
+  });
+}
+
+function cifraFecha(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return dd + " · " + mm;
+}
+
+function htmlEntrada(e) {
+  const texto = escapeHtml(e.texto || "").replace(/\n/g, "<br>");
+  const cuerpo = texto ? `<div class="cuerpo-montaje">${texto}</div>` : "";
+  const media = (e.archivos || [])
+    .map((a) => {
+      const src = "/api/diario/archivo/" + a.id;
+      if (a.kind === "pdf") {
+        return `<a class="pdf-montaje" href="${src}" target="_blank" rel="noopener">${escapeHtml(a.nombre || "pdf")}</a>`;
+      }
+      return `<img class="img-montaje" src="${src}" alt="">`;
+    })
+    .join("");
+  const cuando = cifraFecha(e.createdAt);
+  return `<article class="entrada-diario" data-id="${e.id}">
+    <button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>
+    ${cuando ? `<p class="cuando">${cuando}</p>` : ""}
+    ${cuerpo}${media}
+  </article>`;
+}
+
+async function renderDiario(el) {
+  el.setAttribute("data-pagina", "peldano");
+  el.setAttribute("data-peldano", "55");
+  el.setAttribute("data-strato", "intervencion");
+  el.setAttribute("data-estado", "ocupada");
+  tocarPagina("diario-55");
+  el.innerHTML = `
+    <article class="pieza diario">
+      <header class="cab-home">
+        ${cabZzz({ invisible: true })}
+      </header>
+      <p class="cifra">55</p>
+      <form class="hoja-diario" data-diario>
+        <textarea name="texto" rows="9" autocomplete="off"></textarea>
+        <div class="adjunto-zona" data-drop>
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
+          <button type="button" class="clip" data-clip>adjunto</button>
+          <ul class="lista-adj" data-lista></ul>
+        </div>
+        <button type="submit" class="dejar">·</button>
+      </form>
+      <div class="entradas" data-entradas></div>
+    </article>`;
+  await bindDiario(el);
+}
+
+async function bindDiario(el) {
+  const form = el.querySelector("[data-diario]");
+  const area = form?.querySelector("textarea");
+  const input = el.querySelector("[data-files]");
+  const clip = el.querySelector("[data-clip]");
+  const lista = el.querySelector("[data-lista]");
+  const drop = el.querySelector("[data-drop]");
+  const box = el.querySelector("[data-entradas]");
+  if (!form || !box) return;
+  const pending = [];
+
+  const pintarLista = () => {
+    if (!lista) return;
+    lista.innerHTML = pending
+      .map(
+        (f, i) =>
+          `<li><span>${escapeHtml(f.name)}</span><button type="button" data-x="${i}">×</button></li>`,
+      )
+      .join("");
+  };
+
+  const addFiles = (files) => {
+    for (const f of files || []) {
+      if (pending.length >= 6) break;
+      const ok =
+        /^image\/(jpeg|jpg|png|webp|gif)$/i.test(f.type) ||
+        f.type === "application/pdf";
+      if (!ok) continue;
+      if (f.size > 4.5 * 1024 * 1024) continue;
+      pending.push(f);
+    }
+    pintarLista();
+  };
+
+  const pintarEntradas = (entradas) => {
+    box.innerHTML = (entradas || []).map(htmlEntrada).join("");
+  };
+
+  try {
+    const r = await fetch("/api/diario/");
+    const data = await r.json();
+    pintarEntradas(data.entradas || []);
+  } catch {
+    pintarEntradas([]);
+  }
+
+  clip?.addEventListener("click", (e) => {
+    e.preventDefault();
+    input?.click();
+  });
+  input?.addEventListener("change", () => {
+    addFiles(input.files);
+    input.value = "";
+  });
+  lista?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-x]");
+    if (!btn) return;
+    pending.splice(Number(btn.getAttribute("data-x")), 1);
+    pintarLista();
+  });
+
+  const over = (e) => {
+    e.preventDefault();
+    drop?.classList.add("sobre");
+  };
+  const leave = (e) => {
+    e.preventDefault();
+    drop?.classList.remove("sobre");
+  };
+  drop?.addEventListener("dragover", over);
+  drop?.addEventListener("dragenter", over);
+  drop?.addEventListener("dragleave", leave);
+  drop?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    drop.classList.remove("sobre");
+    addFiles(e.dataTransfer?.files);
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const texto = area ? area.value : "";
+    if (!texto.trim() && !pending.length) return;
+    const fd = new FormData();
+    fd.append("texto", texto);
+    pending.forEach((f) => fd.append("archivos", f));
+    form.classList.add("enviando");
+    try {
+      const r = await fetch("/api/diario/", { method: "POST", body: fd });
+      const data = await r.json();
+      if (r.ok && data.entrada) {
+        box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada));
+        if (area) area.value = "";
+        pending.length = 0;
+        pintarLista();
+      }
+    } catch {
+      /* */
+    }
+    form.classList.remove("enviando");
+  });
+
+  box.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-borrar]");
+    if (!btn) return;
+    const id = btn.getAttribute("data-borrar");
+    const art = btn.closest(".entrada-diario");
+    if (!id || !art) return;
+    art.classList.add("saliendo");
+    try {
+      const r = await fetch("/api/diario/?id=" + encodeURIComponent(id), {
+        method: "DELETE",
+      });
+      if (r.ok) art.remove();
+      else art.classList.remove("saliendo");
+    } catch {
+      art.classList.remove("saliendo");
+    }
+  });
+}
+
 async function renderEnProceso(el, tipo, clave) {
+  if (tipo === "peldano" && String(clave) === "55") {
+    await renderDiario(el);
+    return;
+  }
   el.setAttribute("data-pagina", tipo);
   if (tipo === "cota") el.setAttribute("data-cota", clave);
   if (tipo === "letra") el.setAttribute("data-letra", clave);
@@ -1529,6 +1707,7 @@ export function boot(el) {
     if (el._teatroTick) el._teatroTick();
     if (el._homeOff) el._homeOff();
     if (el._escaleraOff) el._escaleraOff();
+    if (el._mapaOff) el._mapaOff();
     document.querySelector(".velo-zonas")?.remove();
   });
 
