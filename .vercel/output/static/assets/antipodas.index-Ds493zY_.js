@@ -1,1 +1,0 @@
-import{r as e}from"./index-BkTTRsFi.js";import{t}from"./territorio-host-DxPO8YKP.js";var n=e(),r=()=>(0,n.jsx)(t,{pagina:`antipodas`});export{r as component};
