@@ -1109,7 +1109,7 @@ function htmlEntrada(e) {
   const cuerpo = texto ? `<div class="cuerpo-montaje">${texto}</div>` : "";
   const media = (e.archivos || [])
     .map((a) => {
-      const src = "/api/diario/archivo/" + a.id;
+      const src = a.src || "/api/diario/archivo/" + a.id;
       if (a.kind === "pdf") {
         return `<a class="pdf-montaje" href="${src}" target="_blank" rel="noopener">${escapeHtml(a.nombre || "pdf")}</a>`;
       }
@@ -1188,12 +1188,27 @@ async function bindDiario(el) {
     box.innerHTML = (entradas || []).map(htmlEntrada).join("");
   };
 
+  const LS = "smioochy-diario-55";
+  const leerLocal = () => {
+    try {
+      return JSON.parse(localStorage.getItem(LS) || "[]");
+    } catch {
+      return [];
+    }
+  };
+  const escribirLocal = (rows) => {
+    localStorage.setItem(LS, JSON.stringify(rows));
+  };
+
+  let remoto = true;
   try {
     const r = await fetch("/api/diario/");
+    if (!r.ok) throw new Error("api");
     const data = await r.json();
     pintarEntradas(data.entradas || []);
   } catch {
-    pintarEntradas([]);
+    remoto = false;
+    pintarEntradas(leerLocal());
   }
 
   clip?.addEventListener("click", (e) => {
@@ -1228,26 +1243,63 @@ async function bindDiario(el) {
     addFiles(e.dataTransfer?.files);
   });
 
+  const fileToAdjunto = (f) =>
+    new Promise((resolve) => {
+      const kind = f.type === "application/pdf" ? "pdf" : "imagen";
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve({
+          id: "l" + Date.now() + Math.random().toString(16).slice(2),
+          kind,
+          mime: f.type,
+          nombre: f.name,
+          src: reader.result,
+        });
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(f);
+    });
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const texto = area ? area.value : "";
     if (!texto.trim() && !pending.length) return;
+    form.classList.add("enviando");
     const fd = new FormData();
     fd.append("texto", texto);
     pending.forEach((f) => fd.append("archivos", f));
-    form.classList.add("enviando");
-    try {
-      const r = await fetch("/api/diario/", { method: "POST", body: fd });
-      const data = await r.json();
-      if (r.ok && data.entrada) {
-        box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada));
-        if (area) area.value = "";
-        pending.length = 0;
-        pintarLista();
+    let ok = false;
+    if (remoto) {
+      try {
+        const r = await fetch("/api/diario/", { method: "POST", body: fd });
+        const data = await r.json();
+        if (r.ok && data.entrada) {
+          box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada));
+          ok = true;
+        } else remoto = false;
+      } catch {
+        remoto = false;
       }
-    } catch {
-      /* */
     }
+    if (!ok) {
+      const archivos = [];
+      for (const f of pending) {
+        const a = await fileToAdjunto(f);
+        if (a) archivos.push(a);
+      }
+      const entrada = {
+        id: "l" + Date.now(),
+        texto,
+        createdAt: new Date().toISOString(),
+        archivos,
+      };
+      const rows = [entrada, ...leerLocal()];
+      escribirLocal(rows);
+      box.insertAdjacentHTML("afterbegin", htmlEntrada(entrada));
+    }
+    if (area) area.value = "";
+    pending.length = 0;
+    pintarLista();
     form.classList.remove("enviando");
   });
 
@@ -1258,15 +1310,20 @@ async function bindDiario(el) {
     const art = btn.closest(".entrada-diario");
     if (!id || !art) return;
     art.classList.add("saliendo");
-    try {
-      const r = await fetch("/api/diario/?id=" + encodeURIComponent(id), {
-        method: "DELETE",
-      });
-      if (r.ok) art.remove();
-      else art.classList.remove("saliendo");
-    } catch {
-      art.classList.remove("saliendo");
+    let ok = false;
+    if (remoto && !String(id).startsWith("l")) {
+      try {
+        const r = await fetch("/api/diario/?id=" + encodeURIComponent(id), {
+          method: "DELETE",
+        });
+        ok = r.ok;
+      } catch {
+        remoto = false;
+      }
     }
+    escribirLocal(leerLocal().filter((x) => String(x.id) !== String(id)));
+    if (ok || !remoto || String(id).startsWith("l")) art.remove();
+    else art.classList.remove("saliendo");
   });
 }
 
