@@ -1111,7 +1111,7 @@ function htmlEntrada(e, dueno) {
     .map((a) => {
       const src = a.src || "/api/diario/archivo/" + a.id;
       if (a.kind === "pdf") {
-        return `<a class="pdf-montaje" href="${src}" target="_blank" rel="noopener">${escapeHtml(a.nombre || "pdf")}</a>`;
+        return `<a class="pdf-montaje" href="${src}" data-pdf="${escapeHtml(src)}">${escapeHtml(a.nombre || "pdf")}</a>`;
       }
       return `<img class="img-montaje" src="${src}" alt="">`;
     })
@@ -1158,6 +1158,10 @@ async function renderDiario(el) {
         <button type="submit" class="dejar">·</button>
       </form>
       <div class="entradas" data-entradas></div>
+      <div class="pdf-popup" data-pdf-popup hidden>
+        <button type="button" class="pdf-cerrar" data-pdf-cerrar>×</button>
+        <iframe data-pdf-frame title="pdf"></iframe>
+      </div>
     </article>`;
   await bindDiario(el);
 }
@@ -1175,9 +1179,26 @@ async function bindDiario(el) {
   const drop = el.querySelector("[data-drop]");
   const box = el.querySelector("[data-entradas]");
   const estrella = el.querySelector("[data-otro]");
+  const popup = el.querySelector("[data-pdf-popup]");
+  const marco = el.querySelector("[data-pdf-frame]");
   if (!form || !box) return;
   const pending = [];
   let dueno = false;
+
+  const cerrarPdf = () => {
+    if (!popup) return;
+    popup.hidden = true;
+    if (marco) marco.removeAttribute("src");
+  };
+  const abrirPdf = (src) => {
+    if (!popup || !marco || !src) return;
+    marco.src = src;
+    popup.hidden = false;
+  };
+  popup?.querySelector("[data-pdf-cerrar]")?.addEventListener("click", cerrarPdf);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") cerrarPdf();
+  });
 
   const pintarOtro = (on) => {
     if (estrella) estrella.hidden = !on;
@@ -1387,6 +1408,12 @@ async function bindDiario(el) {
   });
 
   box.addEventListener("click", async (e) => {
+    const pdf = e.target.closest("[data-pdf]");
+    if (pdf) {
+      e.preventDefault();
+      abrirPdf(pdf.getAttribute("data-pdf"));
+      return;
+    }
     const btn = e.target.closest("[data-borrar]");
     if (!btn) return;
     if (!dueno) return;
