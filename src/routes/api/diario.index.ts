@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { sesionActiva } from "@/lib/diario-auth.server";
 import { borrarDiario, crearDiario, listDiario } from "@/lib/diario.server";
+
+function negar() {
+  return Response.json({ ok: false }, { status: 401 });
+}
 
 export const Route = createFileRoute("/api/diario/")({
   server: {
@@ -13,6 +18,7 @@ export const Route = createFileRoute("/api/diario/")({
         }
       },
       POST: async ({ request }) => {
+        if (!sesionActiva(request)) return negar();
         try {
           const form = await request.formData();
           const texto = String(form.get("texto") || "");
@@ -38,6 +44,7 @@ export const Route = createFileRoute("/api/diario/")({
         }
       },
       DELETE: async ({ request }) => {
+        if (!sesionActiva(request)) return negar();
         const url = new URL(request.url);
         const id = Number(url.searchParams.get("id"));
         if (!id) return Response.json({ ok: false }, { status: 400 });

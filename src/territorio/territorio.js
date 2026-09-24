@@ -1104,7 +1104,7 @@ function cifraFecha(iso) {
   return dd + " · " + mm;
 }
 
-function htmlEntrada(e) {
+function htmlEntrada(e, dueno) {
   const texto = escapeHtml(e.texto || "").replace(/\n/g, "<br>");
   const cuerpo = texto ? `<div class="cuerpo-montaje">${texto}</div>` : "";
   const media = (e.archivos || [])
@@ -1117,8 +1117,11 @@ function htmlEntrada(e) {
     })
     .join("");
   const cuando = cifraFecha(e.createdAt);
+  const borrar = dueno
+    ? `<button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>`
+    : "";
   return `<article class="entrada-diario" data-id="${e.id}">
-    <button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>
+    ${borrar}
     ${cuando ? `<p class="cuando">${cuando}</p>` : ""}
     ${cuerpo}${media}
   </article>`;
@@ -1136,7 +1139,15 @@ async function renderDiario(el) {
         ${cabZzz({ invisible: true })}
       </header>
       <p class="cifra">55</p>
-      <form class="hoja-diario" data-diario>
+      <button type="button" class="entrar-diario" data-abrir hidden>entrar</button>
+      <form class="hoja-sesion" data-sesion hidden>
+        <input name="user" autocomplete="username" autocapitalize="off" spellcheck="false">
+        <input name="pass" type="password" autocomplete="current-password">
+        <p class="sesion-no" data-sesion-no hidden>no</p>
+        <button type="submit">entrar</button>
+      </form>
+      <button type="button" class="salir-diario" data-salir hidden>salir</button>
+      <form class="hoja-diario" data-diario hidden>
         <textarea name="texto" rows="9" autocomplete="off"></textarea>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
@@ -1152,6 +1163,10 @@ async function renderDiario(el) {
 
 async function bindDiario(el) {
   const form = el.querySelector("[data-diario]");
+  const sesion = el.querySelector("[data-sesion]");
+  const abrir = el.querySelector("[data-abrir]");
+  const salir = el.querySelector("[data-salir]");
+  const no = el.querySelector("[data-sesion-no]");
   const area = form?.querySelector("textarea");
   const input = el.querySelector("[data-files]");
   const clip = el.querySelector("[data-clip]");
@@ -1160,6 +1175,22 @@ async function bindDiario(el) {
   const box = el.querySelector("[data-entradas]");
   if (!form || !box) return;
   const pending = [];
+  let dueno = false;
+
+  const mostrar = (editor) => {
+    dueno = editor;
+    if (editor) {
+      form.hidden = false;
+      if (salir) salir.hidden = false;
+      if (sesion) sesion.hidden = true;
+      if (abrir) abrir.hidden = true;
+    } else {
+      form.hidden = true;
+      if (salir) salir.hidden = true;
+      if (sesion) sesion.hidden = true;
+      if (abrir) abrir.hidden = false;
+    }
+  };
 
   const pintarLista = () => {
     if (!lista) return;
@@ -1185,7 +1216,7 @@ async function bindDiario(el) {
   };
 
   const pintarEntradas = (entradas) => {
-    box.innerHTML = (entradas || []).map(htmlEntrada).join("");
+    box.innerHTML = (entradas || []).map((e) => htmlEntrada(e, dueno)).join("");
   };
 
   const LS = "smioochy-diario-55";
@@ -1196,20 +1227,69 @@ async function bindDiario(el) {
       return [];
     }
   };
-  const escribirLocal = (rows) => {
-    localStorage.setItem(LS, JSON.stringify(rows));
-  };
 
   let remoto = true;
+  let cache = [];
   try {
     const r = await fetch("/api/diario/");
     if (!r.ok) throw new Error("api");
     const data = await r.json();
-    pintarEntradas(data.entradas || []);
+    cache = data.entradas || [];
   } catch {
     remoto = false;
-    pintarEntradas(leerLocal());
+    cache = leerLocal();
   }
+  try {
+    const s = await fetch("/api/diario/sesion");
+    if (s.ok) {
+      const data = await s.json();
+      dueno = !!data.ok;
+    }
+  } catch {
+    dueno = false;
+  }
+  mostrar(dueno && remoto);
+  pintarEntradas(cache);
+
+  abrir?.addEventListener("click", () => {
+    if (abrir) abrir.hidden = true;
+    if (sesion) sesion.hidden = false;
+    sesion?.querySelector("input")?.focus();
+  });
+
+  sesion?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(sesion);
+    if (no) no.hidden = true;
+    try {
+      const r = await fetch("/api/diario/sesion", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          user: String(fd.get("user") || ""),
+          pass: String(fd.get("pass") || ""),
+        }),
+      });
+      if (!r.ok) {
+        if (no) no.hidden = false;
+        return;
+      }
+      mostrar(true);
+      pintarEntradas(cache);
+    } catch {
+      if (no) no.hidden = false;
+    }
+  });
+
+  salir?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/diario/sesion", { method: "DELETE" });
+    } catch {
+      /* sigue cerrado en la página */
+    }
+    mostrar(false);
+    pintarEntradas(cache);
+  });
 
   clip?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -1243,23 +1323,6 @@ async function bindDiario(el) {
     addFiles(e.dataTransfer?.files);
   });
 
-  const fileToAdjunto = (f) =>
-    new Promise((resolve) => {
-      const kind = f.type === "application/pdf" ? "pdf" : "imagen";
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve({
-          id: "l" + Date.now() + Math.random().toString(16).slice(2),
-          kind,
-          mime: f.type,
-          nombre: f.name,
-          src: reader.result,
-        });
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(f);
-    });
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const texto = area ? area.value : "";
@@ -1274,28 +1337,21 @@ async function bindDiario(el) {
         const r = await fetch("/api/diario/", { method: "POST", body: fd });
         const data = await r.json();
         if (r.ok && data.entrada) {
-          box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada));
+          cache = [data.entrada, ...cache];
+          box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada, true));
           ok = true;
+        } else if (r.status === 401) {
+          mostrar(false);
+          pintarEntradas(cache);
+          return;
         } else remoto = false;
       } catch {
         remoto = false;
       }
     }
     if (!ok) {
-      const archivos = [];
-      for (const f of pending) {
-        const a = await fileToAdjunto(f);
-        if (a) archivos.push(a);
-      }
-      const entrada = {
-        id: "l" + Date.now(),
-        texto,
-        createdAt: new Date().toISOString(),
-        archivos,
-      };
-      const rows = [entrada, ...leerLocal()];
-      escribirLocal(rows);
-      box.insertAdjacentHTML("afterbegin", htmlEntrada(entrada));
+      form.classList.remove("enviando");
+      return;
     }
     if (area) area.value = "";
     pending.length = 0;
@@ -1306,6 +1362,7 @@ async function bindDiario(el) {
   box.addEventListener("click", async (e) => {
     const btn = e.target.closest("[data-borrar]");
     if (!btn) return;
+    if (!dueno) return;
     const id = btn.getAttribute("data-borrar");
     const art = btn.closest(".entrada-diario");
     if (!id || !art) return;
@@ -1317,13 +1374,19 @@ async function bindDiario(el) {
           method: "DELETE",
         });
         ok = r.ok;
+        if (r.status === 401) {
+          mostrar(false);
+          pintarEntradas(cache);
+          return;
+        }
       } catch {
         remoto = false;
       }
     }
-    escribirLocal(leerLocal().filter((x) => String(x.id) !== String(id)));
-    if (ok || !remoto || String(id).startsWith("l")) art.remove();
-    else art.classList.remove("saliendo");
+    if (ok) {
+      cache = cache.filter((x) => String(x.id) !== String(id));
+      art.remove();
+    } else art.classList.remove("saliendo");
   });
 }
 

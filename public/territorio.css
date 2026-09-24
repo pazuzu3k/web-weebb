@@ -1320,6 +1320,53 @@ html[data-pagina="escalera"] #territorio {
   margin-bottom: 1.4rem;
 }
 
+.entrar-diario,
+.salir-diario,
+.hoja-sesion button {
+  font-family: var(--cifra);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.hoja-sesion {
+  max-width: 18rem;
+  margin: 0 0 1.4rem;
+}
+
+.hoja-sesion input {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.6rem;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--gris-claro);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--tipo);
+  font-size: 1rem;
+}
+
+.hoja-sesion input:focus {
+  outline: none;
+  border-bottom-color: var(--tinta);
+}
+
+.hoja-sesion .sesion-no {
+  margin: 0 0 0.4rem;
+  font-family: var(--cifra);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.salir-diario {
+  display: block;
+  margin: 0 0 1rem;
+}
+
 .hoja-diario {
   max-width: 38rem;
 }
