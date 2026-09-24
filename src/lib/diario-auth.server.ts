@@ -55,30 +55,36 @@ export function cookieCerrar(secure: boolean) {
   return parts.join("; ");
 }
 
-export function sesionActiva(request: Request) {
+function leerSesion(request: Request): string | null {
   const raw = request.headers.get("cookie") || "";
   const match = raw.match(/(?:^|;\s*)smioochy_sesion=([^;]+)/);
-  if (!match) return false;
+  if (!match) return null;
   const token = decodeURIComponent(match[1] || "");
   const dot = token.lastIndexOf(".");
-  if (dot < 1) return false;
+  if (dot < 1) return null;
   const body = token.slice(0, dot);
   const sig = token.slice(dot + 1);
   const expect = sign(body);
   const a = Buffer.from(sig);
   const b = Buffer.from(expect);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
   try {
     const data = JSON.parse(Buffer.from(body, "base64url").toString()) as {
       u?: string;
       exp?: number;
     };
-    return (
-      CUENTAS.some((c) => c.user === data.u) &&
-      typeof data.exp === "number" &&
-      data.exp > Date.now()
-    );
+    if (!CUENTAS.some((c) => c.user === data.u)) return null;
+    if (typeof data.exp !== "number" || data.exp <= Date.now()) return null;
+    return data.u || null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function sesionUsuario(request: Request) {
+  return leerSesion(request);
+}
+
+export function sesionActiva(request: Request) {
+  return leerSesion(request) !== null;
 }

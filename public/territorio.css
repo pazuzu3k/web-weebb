@@ -1318,6 +1318,19 @@ html[data-pagina="escalera"] #territorio {
   margin-bottom: 1.4rem;
 }
 
+.otro-sesion {
+  position: fixed;
+  top: 0.7rem;
+  right: 1rem;
+  z-index: 60;
+  margin: 0;
+  font-family: var(--cifra);
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
 .entrar-diario,
 .salir-diario,
 .hoja-sesion button {

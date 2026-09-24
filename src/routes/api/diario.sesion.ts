@@ -4,14 +4,27 @@ import {
   cookieSesion,
   credencialesValidas,
   esHttps,
-  sesionActiva,
+  sesionUsuario,
 } from "@/lib/diario-auth.server";
+import {
+  hayOtraSesionDiario,
+  marcarSesionDiario,
+  soltarSesionDiario,
+} from "@/lib/visitas.server";
+
+async function estado(request: Request) {
+  const user = sesionUsuario(request);
+  if (!user) return { ok: false, otro: false };
+  await marcarSesionDiario(user);
+  const otro = await hayOtraSesionDiario(user);
+  return { ok: true, otro };
+}
 
 export const Route = createFileRoute("/api/diario/sesion")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        return Response.json({ ok: sesionActiva(request) });
+        return Response.json(await estado(request));
       },
       POST: async ({ request }) => {
         let user = "";
@@ -26,7 +39,9 @@ export const Route = createFileRoute("/api/diario/sesion")({
         if (!credencialesValidas(user, pass)) {
           return Response.json({ ok: false }, { status: 401 });
         }
-        return new Response(JSON.stringify({ ok: true }), {
+        await marcarSesionDiario(user);
+        const otro = await hayOtraSesionDiario(user);
+        return new Response(JSON.stringify({ ok: true, otro }), {
           status: 200,
           headers: {
             "content-type": "application/json",
@@ -35,7 +50,9 @@ export const Route = createFileRoute("/api/diario/sesion")({
         });
       },
       DELETE: async ({ request }) => {
-        return new Response(JSON.stringify({ ok: true }), {
+        const user = sesionUsuario(request);
+        if (user) await soltarSesionDiario(user);
+        return new Response(JSON.stringify({ ok: true, otro: false }), {
           status: 200,
           headers: {
             "content-type": "application/json",

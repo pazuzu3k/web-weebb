@@ -1135,6 +1135,7 @@ async function renderDiario(el) {
   tocarPagina("diario-55");
   el.innerHTML = `
     <article class="pieza diario">
+      <span class="otro-sesion" data-otro hidden>*</span>
       <header class="cab-home">
         ${cabZzz({ invisible: true })}
       </header>
@@ -1173,9 +1174,14 @@ async function bindDiario(el) {
   const lista = el.querySelector("[data-lista]");
   const drop = el.querySelector("[data-drop]");
   const box = el.querySelector("[data-entradas]");
+  const estrella = el.querySelector("[data-otro]");
   if (!form || !box) return;
   const pending = [];
   let dueno = false;
+
+  const pintarOtro = (on) => {
+    if (estrella) estrella.hidden = !on;
+  };
 
   const mostrar = (editor) => {
     dueno = editor;
@@ -1189,6 +1195,7 @@ async function bindDiario(el) {
       if (salir) salir.hidden = true;
       if (sesion) sesion.hidden = true;
       if (abrir) abrir.hidden = false;
+      pintarOtro(false);
     }
   };
 
@@ -1244,9 +1251,11 @@ async function bindDiario(el) {
     if (s.ok) {
       const data = await s.json();
       dueno = !!data.ok;
+      pintarOtro(!!data.ok && !!data.otro);
     }
   } catch {
     dueno = false;
+    pintarOtro(false);
   }
   mostrar(dueno && remoto);
   pintarEntradas(cache);
@@ -1274,7 +1283,9 @@ async function bindDiario(el) {
         if (no) no.hidden = false;
         return;
       }
+      const data = await r.json().catch(() => ({}));
       mostrar(true);
+      pintarOtro(!!data.otro);
       pintarEntradas(cache);
     } catch {
       if (no) no.hidden = false;
@@ -1288,8 +1299,24 @@ async function bindDiario(el) {
       /* sigue cerrado en la página */
     }
     mostrar(false);
+    pintarOtro(false);
     pintarEntradas(cache);
   });
+
+  if (window.__diarioPulso) window.clearInterval(window.__diarioPulso);
+  window.__diarioPulso = window.setInterval(async () => {
+    try {
+      const s = await fetch("/api/diario/sesion");
+      if (!s.ok) {
+        pintarOtro(false);
+        return;
+      }
+      const data = await s.json();
+      pintarOtro(!!data.ok && !!data.otro);
+    } catch {
+      pintarOtro(false);
+    }
+  }, 8000);
 
   clip?.addEventListener("click", (e) => {
     e.preventDefault();

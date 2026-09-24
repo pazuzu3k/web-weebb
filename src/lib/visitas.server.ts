@@ -68,3 +68,38 @@ export async function countPresence(path: string): Promise<number> {
     return 0;
   }
 }
+
+const DIARIO_SESION = "diario-sesion";
+
+export async function marcarSesionDiario(user: string): Promise<void> {
+  await heartbeat(user, DIARIO_SESION);
+}
+
+export async function soltarSesionDiario(user: string): Promise<void> {
+  try {
+    const sql = await getSql();
+    await sql.query(
+      `delete from presence_heartbeats where session_key = $1 and path = $2`,
+      [user.slice(0, 80), DIARIO_SESION],
+    );
+  } catch {
+    /* db optional */
+  }
+}
+
+export async function hayOtraSesionDiario(user: string): Promise<boolean> {
+  try {
+    const sql = await getSql();
+    const rows = await sql.query<{ n: number }>(
+      `select count(*)::int as n
+         from presence_heartbeats
+        where path = $1
+          and session_key <> $2
+          and seen_at > now() - interval '25 seconds'`,
+      [DIARIO_SESION, user.slice(0, 80)],
+    );
+    return (rows[0]?.n ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
