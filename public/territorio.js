@@ -363,7 +363,7 @@ function renderSuperficie(el) {
         <div class="dino-marco">
           <a class="zzz-sueño" href="/">zzz</a>
           <a class="dino-umbral" href="/cotas/">
-            <img src="/xerox/dinosaurio.jpg" alt="">
+            <img src="/xerox/dinosaurio.png" alt="">
           </a>
         </div>
       </div>

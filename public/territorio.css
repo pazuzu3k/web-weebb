@@ -192,7 +192,7 @@ button {
 
 .dino-marco {
   position: relative;
-  width: 56.25%;
+  width: 42.19%;
   line-height: 0;
 }
 
@@ -219,11 +219,9 @@ button {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 23.6vh;
+  max-height: 17.7vh;
   object-fit: contain;
   object-position: bottom center;
-  filter: grayscale(1) contrast(1.35);
-  mix-blend-mode: multiply;
 }
 
 .capa-ventanas {
@@ -1265,7 +1263,7 @@ html[data-pagina="escalera"] #territorio {
     min-height: 48vh;
   }
   .dino-umbral img {
-    max-height: 19.1vh;
+    max-height: 14.3vh;
   }
   .ventana.flotante {
     left: 4vw !important;
