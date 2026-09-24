@@ -1,8 +1,17 @@
 import { createHmac, scryptSync, timingSafeEqual } from "node:crypto";
 
-const USER = "s1ento54";
-const SALT = "3ac867d54d582c412f1b5c1cbb777fab";
-const HASH = "507941b0c4f917ea15250e7e0c94cba8f4df4c06b0b852e5fecc00974ab0bc4d";
+const CUENTAS = [
+  {
+    user: "s1ento54",
+    salt: "3ac867d54d582c412f1b5c1cbb777fab",
+    hash: "507941b0c4f917ea15250e7e0c94cba8f4df4c06b0b852e5fecc00974ab0bc4d",
+  },
+  {
+    user: "pazuzu",
+    salt: "b6fc3e1581782cb69aae2d8b35a3a3a6",
+    hash: "98dee7b2d9c43cbd59bb002ec102395a194bc9d8ce512812d7e5bdcd1e8f7daf",
+  },
+];
 const SECRET = "9af28b3143333d0f2a03c0d71f2f23015830e16a9a2c6b62f781b2ffff34f632";
 const COOKIE = "smioochy_sesion";
 const MAX_AGE = 60 * 60 * 24 * 30;
@@ -12,9 +21,10 @@ function sign(body: string) {
 }
 
 export function credencialesValidas(user: string, pass: string) {
-  if (user !== USER) return false;
-  const got = scryptSync(pass, SALT, 32);
-  const want = Buffer.from(HASH, "hex");
+  const cuenta = CUENTAS.find((c) => c.user === user);
+  if (!cuenta) return false;
+  const got = scryptSync(pass, cuenta.salt, 32);
+  const want = Buffer.from(cuenta.hash, "hex");
   if (got.length !== want.length) return false;
   return timingSafeEqual(got, want);
 }
@@ -24,9 +34,9 @@ export function esHttps(request: Request) {
   return proto.split(",")[0]?.trim() === "https" || request.url.startsWith("https:");
 }
 
-export function cookieSesion(secure: boolean) {
+export function cookieSesion(user: string, secure: boolean) {
   const exp = Date.now() + MAX_AGE * 1000;
-  const body = Buffer.from(JSON.stringify({ u: USER, exp })).toString("base64url");
+  const body = Buffer.from(JSON.stringify({ u: user, exp })).toString("base64url");
   const token = `${body}.${sign(body)}`;
   const parts = [
     `${COOKIE}=${token}`,
@@ -63,7 +73,11 @@ export function sesionActiva(request: Request) {
       u?: string;
       exp?: number;
     };
-    return data.u === USER && typeof data.exp === "number" && data.exp > Date.now();
+    return (
+      CUENTAS.some((c) => c.user === data.u) &&
+      typeof data.exp === "number" &&
+      data.exp > Date.now()
+    );
   } catch {
     return false;
   }

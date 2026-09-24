@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/diario/sesion")({
           status: 200,
           headers: {
             "content-type": "application/json",
-            "set-cookie": cookieSesion(esHttps(request)),
+            "set-cookie": cookieSesion(user, esHttps(request)),
           },
         });
       },
