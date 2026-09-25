@@ -1386,11 +1386,11 @@ html[data-pagina="escalera"] #territorio {
 .pie-jueves {
   position: fixed;
   left: 0;
-  right: 0;
+  right: auto;
   bottom: 0;
   z-index: 25;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-end;
   pointer-events: none;
 }
