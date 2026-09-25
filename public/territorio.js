@@ -480,10 +480,6 @@ function aplicarDuenoHome(on) {
 function htmlHojaVentana() {
   return `<form class="hoja-diario hoja-ventana" data-ventana-form hidden>
       <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-      <div class="formato">
-        <button type="button" data-fmt="bold">negrita</button>
-        <button type="button" data-fmt="italic">cursiva</button>
-      </div>
       <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
       <button type="submit" class="dejar">·</button>
     </form>
@@ -514,7 +510,7 @@ async function bindHojaVentana(win, lugar) {
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!duenoHome) return;
-    const texto = area ? sanearTexto(area.innerHTML) : "";
+    const texto = area ? leerFormato(area) : "";
     const titulo = form.querySelector("[name=titulo]");
     const tituloTxt = titulo ? titulo.value : "";
     if (!tituloTxt.trim() && !textoPlano(texto)) return;
@@ -553,7 +549,7 @@ async function bindHojaVentana(win, lugar) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">negrita</button><button type="button" data-fmt="italic">cursiva</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -572,7 +568,7 @@ async function bindHojaVentana(win, lugar) {
             body: JSON.stringify({
               id: item.id,
               titulo: formEd.titulo.value,
-              texto: sanearTexto(rico.innerHTML),
+              texto: leerFormato(rico),
             }),
           });
           if (r.status === 401) {
@@ -1412,18 +1408,51 @@ function ligarTexto(area) {
   });
 }
 
+function marcaFormato(node) {
+  const tag = node.tagName || "";
+  let italic = tag === "I" || tag === "EM";
+  let bold = tag === "B" || tag === "STRONG";
+  try {
+    const cs = getComputedStyle(node);
+    if (cs.fontStyle === "italic" || cs.fontStyle === "oblique") italic = true;
+    else if (cs.fontStyle === "normal") italic = false;
+    const w = parseInt(cs.fontWeight, 10);
+    if (w >= 600 || cs.fontWeight === "bold") bold = true;
+    else if (w > 0 && w < 600) bold = false;
+  } catch {
+    /* */
+  }
+  return { italic, bold };
+}
+
+function leerFormato(el) {
+  if (!el) return "";
+  let out = "";
+  const walk = (node, estilo) => {
+    if (node.nodeType === 3) {
+      const t = node.textContent || "";
+      if (!t) return;
+      let chunk = escapeHtml(t);
+      if (estilo.bold) chunk = "<strong>" + chunk + "</strong>";
+      if (estilo.italic) chunk = "<em>" + chunk + "</em>";
+      out += chunk;
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    if (node.tagName === "BR") {
+      out += "<br>";
+      return;
+    }
+    const estiloN = marcaFormato(node);
+    node.childNodes.forEach((c) => walk(c, estiloN));
+    if (node.tagName === "DIV" || node.tagName === "P" || node.tagName === "LI") out += "<br>";
+  };
+  el.childNodes.forEach((c) => walk(c, { italic: false, bold: false }));
+  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+}
+
 function ligarFormato(root, area) {
   ligarTexto(area);
-  root.querySelectorAll("[data-fmt]").forEach((b) => {
-    if (b._fmt) return;
-    b._fmt = true;
-    b.addEventListener("mousedown", (e) => e.preventDefault());
-    b.addEventListener("click", (e) => {
-      e.preventDefault();
-      area.focus();
-      document.execCommand(b.getAttribute("data-fmt"), false);
-    });
-  });
 }
 
 
@@ -1486,10 +1515,6 @@ async function renderDiario(el) {
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
         <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-        <div class="formato">
-          <button type="button" data-fmt="bold">negrita</button>
-          <button type="button" data-fmt="italic">cursiva</button>
-        </div>
         <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
@@ -1817,7 +1842,7 @@ async function bindDiario(el) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const texto = area ? sanearTexto(area.innerHTML) : "";
+    const texto = area ? leerFormato(area) : "";
     const titulo = form.querySelector("[name=titulo]");
     const tituloTxt = titulo ? titulo.value : "";
     if (!tituloTxt.trim() && !textoPlano(texto) && !pending.length) return;
@@ -1873,7 +1898,7 @@ async function bindDiario(el) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">negrita</button><button type="button" data-fmt="italic">cursiva</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -1892,7 +1917,7 @@ async function bindDiario(el) {
             body: JSON.stringify({
               id: item.id,
               titulo: formEd.titulo.value,
-              texto: sanearTexto(rico.innerHTML),
+              texto: leerFormato(rico),
             }),
           });
           if (r.status === 401) {

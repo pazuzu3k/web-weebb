@@ -1596,26 +1596,6 @@ html[data-pagina="escalera"] #territorio {
   max-width: 38rem;
 }
 
-.formato {
-  display: flex;
-  gap: 1.1rem;
-  margin: 0 0 0.2rem;
-}
-
-.formato button {
-  min-height: 36px;
-  font-family: var(--tipo);
-  font-size: 0.95rem;
-}
-
-.formato button[data-fmt="bold"] {
-  font-weight: 700;
-}
-
-.formato button[data-fmt="italic"] {
-  font-style: italic;
-}
-
 .texto-rico {
   display: block;
   width: 100%;
@@ -1642,7 +1622,10 @@ html[data-pagina="escalera"] #territorio {
   font-weight: 700;
 }
 
-.cuerpo-montaje em {
+.texto-rico em,
+.texto-rico i,
+.cuerpo-montaje em,
+.cuerpo-montaje i {
   font-style: italic;
 }
 
