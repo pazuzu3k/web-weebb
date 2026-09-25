@@ -1110,11 +1110,11 @@ function htmlEntrada(e, dueno) {
     })
     .join("");
   const titulo = escapeHtml(e.titulo || "");
-  const borrar = dueno
-    ? `<button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>`
+  const acciones = dueno
+    ? `<button type="button" class="editar-entrada-btn" data-editar="${e.id}">editar</button><button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>`
     : "";
   return `<article class="entrada-diario" data-id="${e.id}">
-    ${borrar}
+    ${acciones}
     ${titulo ? `<p class="cuando">${titulo}</p>` : ""}
     ${cuerpo}${media}
   </article>`;
@@ -1517,6 +1517,56 @@ async function bindDiario(el) {
     if (pdf) {
       e.preventDefault();
       abrirPdf(pdf.getAttribute("data-pdf"));
+      return;
+    }
+    const editar = e.target.closest("[data-editar]");
+    if (editar) {
+      if (!dueno) return;
+      const id = editar.getAttribute("data-editar");
+      const art = editar.closest(".entrada-diario");
+      const item = cache.find((x) => String(x.id) === String(id));
+      if (!id || !art || !item || art.querySelector("form.editar-entrada")) return;
+      const cuando = art.querySelector(".cuando");
+      const cuerpo = art.querySelector(".cuerpo-montaje");
+      const formEd = document.createElement("form");
+      formEd.className = "editar-entrada";
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><textarea name="texto" rows="6"></textarea><button type="submit" class="dejar">·</button>`;
+      formEd.titulo.value = item.titulo || "";
+      formEd.texto.value = item.texto || "";
+      if (cuando) cuando.hidden = true;
+      if (cuerpo) cuerpo.hidden = true;
+      art.insertBefore(formEd, cuando || cuerpo || art.querySelector("img, a"));
+      formEd.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        if (!dueno) return;
+        formEd.classList.add("enviando");
+        try {
+          const r = await fetch("/api/diario/", {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              id: item.id,
+              titulo: formEd.titulo.value,
+              texto: formEd.texto.value,
+            }),
+          });
+          if (r.status === 401) {
+            mostrar(false);
+            pintarEntradas(cache);
+            return;
+          }
+          const data = await r.json();
+          if (!r.ok || !data.entrada) {
+            formEd.classList.remove("enviando");
+            return;
+          }
+          item.titulo = data.entrada.titulo || "";
+          item.texto = data.entrada.texto || "";
+          art.outerHTML = htmlEntrada(item, true);
+        } catch {
+          formEd.classList.remove("enviando");
+        }
+      });
       return;
     }
     const btn = e.target.closest("[data-borrar]");

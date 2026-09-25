@@ -1633,7 +1633,73 @@ html[data-pagina="escalera"] #territorio {
 .entrada-diario {
   position: relative;
   margin: 0 0 4.2rem;
-  padding-right: 2.4rem;
+  padding-right: 6.2rem;
+}
+
+.entrada-diario .editar-entrada-btn {
+  position: absolute;
+  top: 0.35rem;
+  right: 2.4rem;
+  min-height: 44px;
+  font-family: var(--cifra);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.editar-entrada {
+  max-width: 38rem;
+  margin: 0 0 0.8rem;
+}
+
+.editar-entrada .titulo-entrada {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.8rem;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--gris-claro);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--cifra);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+}
+
+.editar-entrada textarea {
+  display: block;
+  width: 100%;
+  min-height: 6rem;
+  margin: 0 0 0.6rem;
+  padding: 0.4rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--gris-claro);
+  border-radius: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--tipo);
+  font-size: 1.12rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.editar-entrada textarea:focus,
+.editar-entrada .titulo-entrada:focus {
+  outline: none;
+  border-bottom-color: var(--tinta);
+}
+
+.editar-entrada .dejar {
+  font-family: var(--cifra);
+  font-size: 1.6rem;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.editar-entrada.enviando {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 .entrada-diario .borrar-entrada {

@@ -233,6 +233,26 @@ export async function getPreliminar(): Promise<{
   };
 }
 
+export async function editarDiario(
+  id: number,
+  input: { titulo?: string; texto?: string },
+): Promise<{ id: number; titulo: string; texto: string } | null> {
+  if (!id || id < 1) return null;
+  const titulo = String(input.titulo || "").trim().slice(0, 80);
+  const texto = String(input.texto || "").slice(0, MAX_TEXTO);
+  const sql = await getSql();
+  const rows = await sql.query<{ id: number; titulo: string; texto: string }>(
+    `update diario_entradas
+        set titulo = $2, texto = $3
+      where id = $1
+      returning id, titulo, texto`,
+    [id, titulo, texto],
+  );
+  const row = rows[0];
+  if (!row) return null;
+  return { id: row.id, titulo: row.titulo || "", texto: row.texto };
+}
+
 export async function borrarDiario(id: number): Promise<boolean> {
   if (!id || id < 1) return false;
   const sql = await getSql();
