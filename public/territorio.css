@@ -1361,12 +1361,22 @@ html[data-pagina="escalera"] #territorio {
 }
 
 .pieza h2.titulo-diario {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.9rem;
   margin: 2vh 0 22vh;
   font-family: var(--tipo);
   font-weight: 400;
   font-size: clamp(2.6rem, 8vw, 4.4rem);
   line-height: 1;
   letter-spacing: 0;
+}
+
+.pieza h2.titulo-diario img {
+  height: 1.7em;
+  width: auto;
+  display: block;
 }
 
 .pieza.diario {
