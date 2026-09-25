@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sesionActiva } from "@/lib/diario-auth.server";
-import { borrarDiario, crearDiario, editarDiario, hayPreliminar, listDiario } from "@/lib/diario.server";
+import { borrarDiario, crearDiario, editarDiario, hayPreliminar, listDiario, lugarDe } from "@/lib/diario.server";
 
 function negar() {
   return Response.json({ ok: false }, { status: 401 });
@@ -9,10 +9,11 @@ function negar() {
 export const Route = createFileRoute("/api/diario/")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
         try {
-          const entradas = await listDiario();
-          const preliminar = await hayPreliminar();
+          const lugar = lugarDe(new URL(request.url).searchParams.get("lugar"));
+          const entradas = await listDiario(lugar);
+          const preliminar = lugar === "peldano-55" ? await hayPreliminar() : false;
           return Response.json({ entradas, preliminar });
         } catch {
           return Response.json({ entradas: [] });
@@ -36,7 +37,12 @@ export const Route = createFileRoute("/api/diario/")({
               bytes: buf,
             });
           }
-          const entrada = await crearDiario({ titulo, texto, archivos });
+          const entrada = await crearDiario({
+            titulo,
+            texto,
+            lugar: String(form.get("lugar") || ""),
+            archivos,
+          });
           return Response.json({ entrada });
         } catch (err) {
           console.error("[diario]", err);

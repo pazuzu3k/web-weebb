@@ -368,6 +368,14 @@ function renderSuperficie(el) {
         </div>
       </div>
       <div class="capa-ventanas" data-ventanas></div>
+      <button type="button" class="entrar-diario entrar-home" data-home-abrir hidden>entrar</button>
+      <form class="hoja-sesion hoja-home" data-home-sesion hidden>
+        <input name="user" autocomplete="username" autocapitalize="off" spellcheck="false">
+        <input name="pass" type="password" autocomplete="current-password">
+        <p class="sesion-no" data-home-no hidden>no</p>
+        <button type="submit">entrar</button>
+      </form>
+      <button type="button" class="salir-diario salir-home" data-home-salir hidden>salir</button>
     </div>`;
 }
 
@@ -400,6 +408,209 @@ function bindHome(root) {
     const win = e.target.closest(".ventana");
     if (win) traer(win);
   });
+
+  const abrir = root.querySelector("[data-home-abrir]");
+  const sesion = root.querySelector("[data-home-sesion]");
+  const salir = root.querySelector("[data-home-salir]");
+  const no = root.querySelector("[data-home-no]");
+  abrir?.addEventListener("click", () => {
+    if (abrir) abrir.hidden = true;
+    if (sesion) sesion.hidden = false;
+    sesion?.querySelector("input")?.focus();
+  });
+  sesion?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(sesion);
+    if (no) no.hidden = true;
+    try {
+      const r = await fetch("/api/diario/sesion", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          user: String(fd.get("user") || ""),
+          pass: String(fd.get("pass") || ""),
+        }),
+      });
+      if (!r.ok) {
+        if (no) no.hidden = false;
+        return;
+      }
+      aplicarDuenoHome(true);
+    } catch {
+      if (no) no.hidden = false;
+    }
+  });
+  salir?.addEventListener("click", async () => {
+    try {
+      await fetch("/api/diario/sesion", { method: "DELETE" });
+    } catch {
+      /* */
+    }
+    aplicarDuenoHome(false);
+  });
+  (async () => {
+    try {
+      const s = await fetch("/api/diario/sesion");
+      const data = s.ok ? await s.json() : {};
+      aplicarDuenoHome(!!data.ok);
+    } catch {
+      aplicarDuenoHome(false);
+    }
+  })();
+}
+
+let duenoHome = false;
+
+function aplicarDuenoHome(on) {
+  duenoHome = !!on;
+  document.querySelectorAll("[data-home-abrir]").forEach((el) => {
+    el.hidden = duenoHome;
+  });
+  document.querySelectorAll("[data-home-salir]").forEach((el) => {
+    el.hidden = !duenoHome;
+  });
+  document.querySelectorAll("[data-home-sesion]").forEach((el) => {
+    if (duenoHome) el.hidden = true;
+  });
+  document.querySelectorAll(".ventana").forEach((win) => {
+    if (win._pintar) win._pintar();
+  });
+}
+
+function htmlHojaVentana() {
+  return `<form class="hoja-diario hoja-ventana" data-ventana-form hidden>
+      <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
+      <div class="formato">
+        <button type="button" data-fmt="bold">negrita</button>
+        <button type="button" data-fmt="italic">cursiva</button>
+      </div>
+      <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+      <button type="submit" class="dejar">·</button>
+    </form>
+    <div class="entradas entradas-ventana" data-entradas></div>`;
+}
+
+async function bindHojaVentana(win, lugar) {
+  const form = win.querySelector("[data-ventana-form]");
+  const box = win.querySelector("[data-entradas]");
+  const area = form?.querySelector("[data-texto]");
+  if (form && area) ligarFormato(form, area);
+  let cache = [];
+  const pintar = () => {
+    if (form) form.hidden = !duenoHome;
+    if (box) box.innerHTML = cache.map((e) => htmlEntrada(e, duenoHome)).join("");
+  };
+  win._pintar = pintar;
+  try {
+    const r = await fetch("/api/diario/?lugar=" + encodeURIComponent(lugar));
+    if (r.ok) {
+      const data = await r.json();
+      cache = data.entradas || [];
+    }
+  } catch {
+    /* */
+  }
+  pintar();
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!duenoHome) return;
+    const texto = area ? sanearTexto(area.innerHTML) : "";
+    const titulo = form.querySelector("[name=titulo]");
+    const tituloTxt = titulo ? titulo.value : "";
+    if (!tituloTxt.trim() && !textoPlano(texto)) return;
+    form.classList.add("enviando");
+    const fd = new FormData();
+    fd.append("titulo", tituloTxt);
+    fd.append("texto", texto);
+    fd.append("lugar", lugar);
+    try {
+      const r = await fetch("/api/diario/", { method: "POST", body: fd });
+      if (r.status === 401) {
+        aplicarDuenoHome(false);
+      } else {
+        const data = await r.json();
+        if (r.ok && data.entrada) {
+          cache = [data.entrada, ...cache];
+          if (area) area.innerHTML = "";
+          if (titulo) titulo.value = "";
+          pintar();
+        }
+      }
+    } catch {
+      /* */
+    }
+    form.classList.remove("enviando");
+  });
+  box?.addEventListener("click", async (e) => {
+    const editar = e.target.closest("[data-editar]");
+    if (editar) {
+      if (!duenoHome) return;
+      const id = editar.getAttribute("data-editar");
+      const art = editar.closest(".entrada-diario");
+      const item = cache.find((x) => String(x.id) === String(id));
+      if (!id || !art || !item || art.querySelector("form.editar-entrada")) return;
+      const cuando = art.querySelector(".cuando");
+      const cuerpo = art.querySelector(".cuerpo-montaje");
+      const formEd = document.createElement("form");
+      formEd.className = "editar-entrada";
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">negrita</button><button type="button" data-fmt="italic">cursiva</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      const rico = formEd.querySelector("[data-texto]");
+      formEd.titulo.value = item.titulo || "";
+      ponerTexto(rico, item.texto || "");
+      ligarFormato(formEd, rico);
+      if (cuando) cuando.hidden = true;
+      if (cuerpo) cuerpo.hidden = true;
+      art.insertBefore(formEd, cuando || cuerpo || art.querySelector("img, a"));
+      formEd.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        if (!duenoHome) return;
+        formEd.classList.add("enviando");
+        try {
+          const r = await fetch("/api/diario/", {
+            method: "PATCH",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              id: item.id,
+              titulo: formEd.titulo.value,
+              texto: sanearTexto(rico.innerHTML),
+            }),
+          });
+          if (r.status === 401) {
+            aplicarDuenoHome(false);
+            return;
+          }
+          const data = await r.json();
+          if (!r.ok || !data.entrada) {
+            formEd.classList.remove("enviando");
+            return;
+          }
+          item.titulo = data.entrada.titulo || "";
+          item.texto = data.entrada.texto || "";
+          pintar();
+        } catch {
+          formEd.classList.remove("enviando");
+        }
+      });
+      return;
+    }
+    const btn = e.target.closest("[data-borrar]");
+    if (!btn || !duenoHome) return;
+    const id = btn.getAttribute("data-borrar");
+    const art = btn.closest(".entrada-diario");
+    if (!id || !art) return;
+    try {
+      const r = await fetch("/api/diario/?id=" + encodeURIComponent(id), { method: "DELETE" });
+      if (r.status === 401) {
+        aplicarDuenoHome(false);
+        return;
+      }
+      if (!r.ok) return;
+      cache = cache.filter((x) => String(x.id) !== String(id));
+      art.remove();
+    } catch {
+      /* */
+    }
+  });
 }
 
 async function abrirVentana(capa, id, traer, cerrar) {
@@ -426,8 +637,13 @@ async function abrirVentana(capa, id, traer, cerrar) {
   capa.appendChild(win);
   traer(win);
   const cuerpo = win.querySelector("[data-cuerpo]");
-  cuerpo.innerHTML = await cuerpoSeccion(L.seccion, L.letra);
-  bindSeccionVentana(L.seccion, win, cuerpo);
+  if (L.seccion === "antipodas" || L.seccion === "hizo") {
+    cuerpo.innerHTML = htmlHojaVentana();
+    await bindHojaVentana(win, "ventana-" + L.letra);
+  } else {
+    cuerpo.innerHTML = await cuerpoSeccion(L.seccion, L.letra);
+    bindSeccionVentana(L.seccion, win, cuerpo);
+  }
   dragVentanas(win);
   const cl = win.querySelector(".cerrar");
   cl.addEventListener("pointerdown", (e) => e.stopPropagation());

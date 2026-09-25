@@ -58,7 +58,15 @@ function asBytes(v: unknown): Uint8Array {
   return new Uint8Array();
 }
 
-export async function listDiario(): Promise<DiarioEntrada[]> {
+const LUGARES = new Set(["peldano-55", "ventana-b", "ventana-e"]);
+
+export function lugarDe(v: unknown) {
+  const s = String(v || "peldano-55");
+  return LUGARES.has(s) ? s : "peldano-55";
+}
+
+export async function listDiario(lugar = "peldano-55"): Promise<DiarioEntrada[]> {
+  const sitio = lugarDe(lugar);
   const sql = await getSql();
   const rows = await sql.query<{
     id: number;
@@ -68,8 +76,10 @@ export async function listDiario(): Promise<DiarioEntrada[]> {
   }>(
     `select id, titulo, texto, created_at::text as created_at
        from diario_entradas
+      where lugar = $1
       order by created_at desc
       limit 80`,
+    [sitio],
   );
   if (!rows.length) return [];
   const ids = rows.map((r) => r.id);
@@ -207,10 +217,12 @@ function textoPlano(html: string) {
 export async function crearDiario(input: {
   titulo?: string;
   texto: string;
+  lugar?: string;
   archivos: { mime: string; nombre: string; bytes: Uint8Array }[];
 }): Promise<DiarioEntrada> {
   const titulo = String(input.titulo || "").trim().slice(0, 80);
   const texto = sanearTexto(input.texto || "");
+  const lugar = lugarDe(input.lugar);
   const incoming = (input.archivos || []).slice(0, MAX_FILES);
   const archivos = incoming.filter((a) => {
     const kind = ALLOWED[a.mime];
@@ -226,9 +238,9 @@ export async function crearDiario(input: {
     texto: string;
     created_at: string;
   }>(
-    `insert into diario_entradas (titulo, texto) values ($1, $2)
+    `insert into diario_entradas (titulo, texto, lugar) values ($1, $2, $3)
      returning id, titulo, texto, created_at::text as created_at`,
-    [titulo, texto],
+    [titulo, texto, lugar],
   );
   const row = inserted[0];
   if (!row) throw new Error("insert");

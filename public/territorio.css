@@ -237,11 +237,51 @@ button {
   box-shadow: 4px 4px 0 var(--gris-claro);
 }
 
+.entrar-home,
+.salir-home {
+  position: fixed;
+  top: 0.7rem;
+  left: 1rem;
+  z-index: 80;
+}
+
+.hoja-home {
+  position: fixed;
+  top: 3rem;
+  left: 1rem;
+  z-index: 80;
+  background: var(--papel);
+}
+
+.hoja-home[hidden],
+.entrar-home[hidden] {
+  display: none;
+}
+
 .ventana.flotante {
   position: fixed;
+  width: min(440px, 92vw);
+  max-width: min(440px, 92vw);
   max-height: min(72vh, 560px);
   display: flex;
   flex-direction: column;
+}
+
+.hoja-ventana[hidden] {
+  display: none;
+}
+
+.ventana .hoja-ventana,
+.ventana .entradas-ventana {
+  max-width: none;
+}
+
+.ventana .texto-rico {
+  min-height: 6rem;
+}
+
+.ventana .entradas-ventana {
+  margin-top: 1rem;
 }
 
 .ventana .barra {
