@@ -480,7 +480,7 @@ function aplicarDuenoHome(on) {
 function htmlHojaVentana() {
   return `<form class="hoja-diario hoja-ventana" data-ventana-form hidden>
       <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-      <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+      <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
       <button type="submit" class="dejar">·</button>
     </form>
     <div class="entradas entradas-ventana" data-entradas></div>`;
@@ -549,7 +549,7 @@ async function bindHojaVentana(win, lugar) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -1453,6 +1453,19 @@ function leerFormato(el) {
 
 function ligarFormato(root, area) {
   ligarTexto(area);
+  if (!area) return;
+  root.querySelectorAll("[data-fmt]").forEach((b) => {
+    if (b._fmt) return;
+    b._fmt = true;
+    b.addEventListener("mousedown", (e) => {
+      e.preventDefault();
+    });
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      document.execCommand(b.getAttribute("data-fmt"), false);
+    });
+  });
 }
 
 
@@ -1515,7 +1528,7 @@ async function renderDiario(el) {
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
         <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-        <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+        <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
           <button type="button" class="clip" data-clip>adjunto</button>
@@ -1898,7 +1911,7 @@ async function bindDiario(el) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");

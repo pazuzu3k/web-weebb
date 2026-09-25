@@ -1596,6 +1596,29 @@ html[data-pagina="escalera"] #territorio {
   max-width: 38rem;
 }
 
+.formato {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0 0 0.2rem;
+}
+
+.formato button {
+  min-width: 32px;
+  min-height: 36px;
+  padding: 0;
+  font-family: var(--tipo);
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.formato button[data-fmt="bold"] {
+  font-weight: 700;
+}
+
+.formato button[data-fmt="italic"] {
+  font-style: italic;
+}
+
 .texto-rico {
   display: block;
   width: 100%;
