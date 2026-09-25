@@ -1153,6 +1153,9 @@ async function renderDiario(el) {
         <button type="submit" class="dejar">·</button>
       </form>
       <div class="entradas" data-entradas></div>
+      <div class="pie-jueves" aria-hidden="true">
+        <img src="/xerox/jueves-pie.png" alt="">
+      </div>
     </article>`;
   await bindDiario(el);
 }

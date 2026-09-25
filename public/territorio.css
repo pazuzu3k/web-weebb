@@ -1373,6 +1373,27 @@ html[data-pagina="escalera"] #territorio {
   min-height: 240vh;
 }
 
+.pie-jueves {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.pie-jueves img {
+  display: block;
+  width: auto;
+  height: min(42vh, 460px);
+  max-width: 96vw;
+  object-fit: contain;
+  object-position: bottom center;
+}
+
 .exceso {
   max-width: 38rem;
   margin: 0 0 0.4rem;
