@@ -26,6 +26,7 @@ import { Route as SitioIndexRouteImport } from './routes/sitio.index'
 import { Route as SuperyaIndexRouteImport } from './routes/superya.index'
 import { Route as TeatroIndexRouteImport } from './routes/teatro.index'
 import { Route as ApiDiarioIndexRouteImport } from './routes/api/diario.index'
+import { Route as ApiDiarioPreliminarRouteImport } from './routes/api/diario.preliminar'
 import { Route as ApiDiarioSesionRouteImport } from './routes/api/diario.sesion'
 import { Route as DirigidoHizoLugarIndexRouteImport } from './routes/dirigido.hizo-lugar.index'
 import { Route as SeminarioEnigmaOjoIndexRouteImport } from './routes/seminario.enigma-ojo.index'
@@ -117,6 +118,11 @@ const ApiDiarioIndexRoute = ApiDiarioIndexRouteImport.update({
   path: '/api/diario/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDiarioPreliminarRoute = ApiDiarioPreliminarRouteImport.update({
+  id: '/api/diario/preliminar',
+  path: '/api/diario/preliminar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDiarioSesionRoute = ApiDiarioSesionRouteImport.update({
   id: '/api/diario/sesion',
   path: '/api/diario/sesion',
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/sitio/': typeof SitioIndexRoute
   '/superya/': typeof SuperyaIndexRoute
   '/teatro/': typeof TeatroIndexRoute
+  '/api/diario/preliminar': typeof ApiDiarioPreliminarRoute
   '/api/diario/sesion': typeof ApiDiarioSesionRoute
   '/api/diario/': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar/': typeof DirigidoHizoLugarIndexRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/sitio': typeof SitioIndexRoute
   '/superya': typeof SuperyaIndexRoute
   '/teatro': typeof TeatroIndexRoute
+  '/api/diario/preliminar': typeof ApiDiarioPreliminarRoute
   '/api/diario/sesion': typeof ApiDiarioSesionRoute
   '/api/diario': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar': typeof DirigidoHizoLugarIndexRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   '/sitio/': typeof SitioIndexRoute
   '/superya/': typeof SuperyaIndexRoute
   '/teatro/': typeof TeatroIndexRoute
+  '/api/diario/preliminar': typeof ApiDiarioPreliminarRoute
   '/api/diario/sesion': typeof ApiDiarioSesionRoute
   '/api/diario/': typeof ApiDiarioIndexRoute
   '/dirigido/hizo-lugar/': typeof DirigidoHizoLugarIndexRoute
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/sitio/'
     | '/superya/'
     | '/teatro/'
+    | '/api/diario/preliminar'
     | '/api/diario/sesion'
     | '/api/diario/'
     | '/dirigido/hizo-lugar/'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/sitio'
     | '/superya'
     | '/teatro'
+    | '/api/diario/preliminar'
     | '/api/diario/sesion'
     | '/api/diario'
     | '/dirigido/hizo-lugar'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/sitio/'
     | '/superya/'
     | '/teatro/'
+    | '/api/diario/preliminar'
     | '/api/diario/sesion'
     | '/api/diario/'
     | '/dirigido/hizo-lugar/'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   SitioIndexRoute: typeof SitioIndexRoute
   SuperyaIndexRoute: typeof SuperyaIndexRoute
   TeatroIndexRoute: typeof TeatroIndexRoute
+  ApiDiarioPreliminarRoute: typeof ApiDiarioPreliminarRoute
   ApiDiarioSesionRoute: typeof ApiDiarioSesionRoute
   ApiDiarioIndexRoute: typeof ApiDiarioIndexRoute
   DirigidoHizoLugarIndexRoute: typeof DirigidoHizoLugarIndexRoute
@@ -438,6 +451,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDiarioIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/diario/preliminar': {
+      id: '/api/diario/preliminar'
+      path: '/api/diario/preliminar'
+      fullPath: '/api/diario/preliminar'
+      preLoaderRoute: typeof ApiDiarioPreliminarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/diario/sesion': {
       id: '/api/diario/sesion'
       path: '/api/diario/sesion'
@@ -493,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitioIndexRoute: SitioIndexRoute,
   SuperyaIndexRoute: SuperyaIndexRoute,
   TeatroIndexRoute: TeatroIndexRoute,
+  ApiDiarioPreliminarRoute: ApiDiarioPreliminarRoute,
   ApiDiarioSesionRoute: ApiDiarioSesionRoute,
   ApiDiarioIndexRoute: ApiDiarioIndexRoute,
   DirigidoHizoLugarIndexRoute: DirigidoHizoLugarIndexRoute,

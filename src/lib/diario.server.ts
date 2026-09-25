@@ -21,6 +21,7 @@ export type DiarioArchivoMeta = {
 
 export type DiarioEntrada = {
   id: number;
+  titulo: string;
   texto: string;
   createdAt: string;
   archivos: DiarioArchivoMeta[];
@@ -61,10 +62,11 @@ export async function listDiario(): Promise<DiarioEntrada[]> {
   const sql = await getSql();
   const rows = await sql.query<{
     id: number;
+    titulo: string;
     texto: string;
     created_at: string;
   }>(
-    `select id, texto, created_at::text as created_at
+    `select id, titulo, texto, created_at::text as created_at
        from diario_entradas
       order by created_at desc
       limit 80`,
@@ -96,6 +98,7 @@ export async function listDiario(): Promise<DiarioEntrada[]> {
   }
   return rows.map((r) => ({
     id: r.id,
+    titulo: r.titulo || "",
     texto: r.texto,
     createdAt: r.created_at,
     archivos: by[r.id] || [],
@@ -103,23 +106,30 @@ export async function listDiario(): Promise<DiarioEntrada[]> {
 }
 
 export async function crearDiario(input: {
+  titulo?: string;
   texto: string;
   archivos: { mime: string; nombre: string; bytes: Uint8Array }[];
 }): Promise<DiarioEntrada> {
+  const titulo = String(input.titulo || "").trim().slice(0, 80);
   const texto = String(input.texto || "").slice(0, MAX_TEXTO);
   const incoming = (input.archivos || []).slice(0, MAX_FILES);
   const archivos = incoming.filter((a) => {
     const kind = ALLOWED[a.mime];
     return kind && a.bytes && a.bytes.byteLength > 0 && a.bytes.byteLength <= MAX_BYTES;
   });
-  if (!texto.trim() && archivos.length === 0) {
+  if (!titulo && !texto.trim() && archivos.length === 0) {
     throw new Error("vacio");
   }
   const sql = await getSql();
-  const inserted = await sql.query<{ id: number; texto: string; created_at: string }>(
-    `insert into diario_entradas (texto) values ($1)
-     returning id, texto, created_at::text as created_at`,
-    [texto],
+  const inserted = await sql.query<{
+    id: number;
+    titulo: string;
+    texto: string;
+    created_at: string;
+  }>(
+    `insert into diario_entradas (titulo, texto) values ($1, $2)
+     returning id, titulo, texto, created_at::text as created_at`,
+    [titulo, texto],
   );
   const row = inserted[0];
   if (!row) throw new Error("insert");
@@ -144,6 +154,7 @@ export async function crearDiario(input: {
   }
   return {
     id: row.id,
+    titulo: row.titulo || "",
     texto: row.texto,
     createdAt: row.created_at,
     archivos: metas,
@@ -168,6 +179,57 @@ export async function getArchivo(id: number): Promise<{
     bytes: asBytes(r.bytes),
     mime: r.mime || "application/octet-stream",
     nombre: r.nombre || "adjunto",
+  };
+}
+
+export async function hayPreliminar(): Promise<boolean> {
+  try {
+    const sql = await getSql();
+    const rows = await sql.query<{ id: number }>(
+      `select id from diario_preliminar where id = 1`,
+    );
+    return Boolean(rows[0]);
+  } catch {
+    return false;
+  }
+}
+
+export async function guardarPreliminar(input: {
+  mime: string;
+  nombre: string;
+  bytes: Uint8Array;
+}): Promise<boolean> {
+  if (input.mime !== "application/pdf") return false;
+  if (!input.bytes?.byteLength || input.bytes.byteLength > MAX_BYTES) return false;
+  const nombre =
+    (input.nombre || "exceso.pdf").replace(/[^\w.\-áéíóúñ ]/gi, "").slice(0, 80) ||
+    "exceso.pdf";
+  const sql = await getSql();
+  await sql.query(
+    `insert into diario_preliminar (id, mime, nombre, bytes)
+     values (1, $1, $2, $3)
+     on conflict (id) do update
+       set mime = excluded.mime, nombre = excluded.nombre, bytes = excluded.bytes`,
+    [input.mime, nombre, Buffer.from(input.bytes)],
+  );
+  return true;
+}
+
+export async function getPreliminar(): Promise<{
+  bytes: Uint8Array;
+  mime: string;
+  nombre: string;
+} | null> {
+  const sql = await getSql();
+  const rows = await sql.query<{ bytes: unknown; mime: string; nombre: string }>(
+    `select bytes, mime, nombre from diario_preliminar where id = 1`,
+  );
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    bytes: asBytes(r.bytes),
+    mime: r.mime || "application/pdf",
+    nombre: r.nombre || "exceso.pdf",
   };
 }
 

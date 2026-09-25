@@ -1116,13 +1116,13 @@ function htmlEntrada(e, dueno) {
       return `<img class="img-montaje" src="${src}" alt="">`;
     })
     .join("");
-  const cuando = cifraFecha(e.createdAt);
+  const titulo = escapeHtml(e.titulo || "");
   const borrar = dueno
     ? `<button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>`
     : "";
   return `<article class="entrada-diario" data-id="${e.id}">
     ${borrar}
-    ${cuando ? `<p class="cuando">${cuando}</p>` : ""}
+    ${titulo ? `<p class="cuando">${titulo}</p>` : ""}
     ${cuerpo}${media}
   </article>`;
 }
@@ -1139,7 +1139,12 @@ async function renderDiario(el) {
       <header class="cab-home">
         ${cabZzz({ invisible: true })}
       </header>
-      <p class="cifra">55</p>
+      <h2 class="titulo-diario">jueves</h2>
+      <p class="exceso sin-pdf" data-exceso>exceso preliminar</p>
+      <form class="exceso-adj" data-exceso-form hidden>
+        <input type="file" accept="application/pdf" hidden data-exceso-file>
+        <button type="button" class="clip" data-exceso-clip>pdf</button>
+      </form>
       <button type="button" class="entrar-diario" data-abrir hidden>entrar</button>
       <form class="hoja-sesion" data-sesion hidden>
         <input name="user" autocomplete="username" autocapitalize="off" spellcheck="false">
@@ -1149,6 +1154,7 @@ async function renderDiario(el) {
       </form>
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
+        <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
         <textarea name="texto" rows="9" autocomplete="off"></textarea>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
@@ -1189,9 +1195,19 @@ async function bindDiario(el) {
   const marco = el.querySelector("[data-pdf-frame]");
   const barra = el.querySelector("[data-pdf-barra]");
   const asa = el.querySelector("[data-pdf-asa]");
+  const exceso = el.querySelector("[data-exceso]");
+  const excesoForm = el.querySelector("[data-exceso-form]");
+  const excesoFile = el.querySelector("[data-exceso-file]");
+  const excesoClip = el.querySelector("[data-exceso-clip]");
   if (!form || !box) return;
   const pending = [];
   let dueno = false;
+  let preliminar = false;
+
+  const pintarExceso = () => {
+    if (!exceso) return;
+    exceso.classList.toggle("sin-pdf", !preliminar);
+  };
 
   const cerrarPdf = () => {
     if (!popup) return;
@@ -1262,11 +1278,13 @@ async function bindDiario(el) {
       if (salir) salir.hidden = false;
       if (sesion) sesion.hidden = true;
       if (abrir) abrir.hidden = true;
+      if (excesoForm) excesoForm.hidden = false;
     } else {
       form.hidden = true;
       if (salir) salir.hidden = true;
       if (sesion) sesion.hidden = true;
       if (abrir) abrir.hidden = false;
+      if (excesoForm) excesoForm.hidden = true;
       pintarOtro(false);
     }
   };
@@ -1314,6 +1332,7 @@ async function bindDiario(el) {
     if (!r.ok) throw new Error("api");
     const data = await r.json();
     cache = data.entradas || [];
+    preliminar = !!data.preliminar;
   } catch {
     remoto = false;
     cache = leerLocal();
@@ -1330,7 +1349,33 @@ async function bindDiario(el) {
     pintarOtro(false);
   }
   mostrar(dueno && remoto);
+  pintarExceso();
   pintarEntradas(cache);
+
+  exceso?.addEventListener("click", () => {
+    if (!preliminar) return;
+    abrirPdf("/api/diario/preliminar");
+  });
+  excesoClip?.addEventListener("click", (e) => {
+    e.preventDefault();
+    excesoFile?.click();
+  });
+  excesoFile?.addEventListener("change", async () => {
+    const f = excesoFile.files && excesoFile.files[0];
+    excesoFile.value = "";
+    if (!f || f.type !== "application/pdf") return;
+    const fd = new FormData();
+    fd.append("pdf", f);
+    try {
+      const r = await fetch("/api/diario/preliminar", { method: "POST", body: fd });
+      if (r.ok) {
+        preliminar = true;
+        pintarExceso();
+      }
+    } catch {
+      /* */
+    }
+  });
 
   abrir?.addEventListener("click", () => {
     if (abrir) abrir.hidden = true;
@@ -1425,9 +1470,12 @@ async function bindDiario(el) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const texto = area ? area.value : "";
-    if (!texto.trim() && !pending.length) return;
+    const titulo = form.querySelector("[name=titulo]");
+    const tituloTxt = titulo ? titulo.value : "";
+    if (!tituloTxt.trim() && !texto.trim() && !pending.length) return;
     form.classList.add("enviando");
     const fd = new FormData();
+    fd.append("titulo", tituloTxt);
     fd.append("texto", texto);
     pending.forEach((f) => fd.append("archivos", f));
     let ok = false;
@@ -1453,6 +1501,7 @@ async function bindDiario(el) {
       return;
     }
     if (area) area.value = "";
+    if (titulo) titulo.value = "";
     pending.length = 0;
     pintarLista();
     form.classList.remove("enviando");
