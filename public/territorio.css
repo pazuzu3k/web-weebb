@@ -1379,7 +1379,7 @@ html[data-pagina="escalera"] #territorio {
   position: absolute;
   left: calc(100% + 0.6rem);
   top: -1vh;
-  height: 112vh;
+  height: 56vh;
   width: auto;
   max-width: none;
   display: block;
@@ -1407,7 +1407,7 @@ html[data-pagina="escalera"] #territorio {
 .pie-jueves img {
   display: block;
   width: auto;
-  height: 78vh;
+  height: 48vh;
   max-width: none;
   object-fit: contain;
   object-position: bottom left;
