@@ -100,16 +100,6 @@ button {
   cursor: pointer;
 }
 
-.atras:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-}
-
-.cab-home a:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-}
-
 .letreros {
   flex: 1;
   display: flex;
@@ -729,10 +719,6 @@ html[data-deseo] .flor-cor {
   line-height: 1.7;
 }
 
-.sesiones a:hover {
-  text-decoration: underline;
-}
-
 .hueco {
   min-height: 2.2rem;
   border-left: 1px solid var(--gris);
@@ -1112,11 +1098,6 @@ html[data-pagina="escalera"] #territorio {
   text-align: right;
 }
 
-.peldaño:hover .peldaño-tit {
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
-}
-
 .pieza.en-proceso {
   padding-top: 2.4rem;
 }
@@ -1161,8 +1142,6 @@ html[data-pagina="escalera"] #territorio {
   font-family: var(--cifra);
   font-size: 0.85rem;
   margin: 0.4rem 0;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
 }
 
 .pdf-popup[hidden] {
@@ -1408,13 +1387,10 @@ html[data-pagina="escalera"] #territorio {
   font-size: 1.12rem;
   line-height: 1.55;
   cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 0.18em;
 }
 
 .exceso.sin-pdf {
   cursor: default;
-  text-decoration: none;
 }
 
 .exceso-adj {
@@ -1427,8 +1403,6 @@ html[data-pagina="escalera"] #territorio {
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   min-height: 44px;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 .hoja-diario .titulo-entrada {
@@ -1476,8 +1450,6 @@ html[data-pagina="escalera"] #territorio {
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   min-height: 44px;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 .hoja-sesion {
@@ -1511,7 +1483,11 @@ html[data-pagina="escalera"] #territorio {
   letter-spacing: 0.08em;
 }
 
-.salir-diario {
+.salir-diario[hidden] {
+  display: none;
+}
+
+.salir-diario:not([hidden]) {
   display: block;
   margin: 0 0 1rem;
 }
@@ -1557,8 +1533,6 @@ html[data-pagina="escalera"] #territorio {
   font-size: 0.85rem;
   letter-spacing: 0.08em;
   min-height: 44px;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 .lista-adj {
