@@ -1366,7 +1366,7 @@ function sanearTexto(input) {
     }
   }
   while (open.length) out += "</" + open.pop() + ">";
-  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+  return out;
 }
 
 function textoPlano(html) {
@@ -1428,6 +1428,8 @@ function marcaFormato(node) {
 function leerFormato(el) {
   if (!el) return "";
   let out = "";
+  const bloque = (node) =>
+    node.tagName === "DIV" || node.tagName === "P" || node.tagName === "LI";
   const walk = (node, estilo) => {
     if (node.nodeType === 3) {
       const t = node.textContent || "";
@@ -1439,16 +1441,29 @@ function leerFormato(el) {
       return;
     }
     if (node.nodeType !== 1) return;
+    if (bloque(node)) {
+      const solo =
+        node.childNodes.length === 0 ||
+        (node.childNodes.length === 1 && node.firstChild.tagName === "BR");
+      if (solo) {
+        out += "<br>";
+        return;
+      }
+    }
     if (node.tagName === "BR") {
       out += "<br>";
       return;
     }
     const estiloN = marcaFormato(node);
     node.childNodes.forEach((c) => walk(c, estiloN));
-    if (node.tagName === "DIV" || node.tagName === "P" || node.tagName === "LI") out += "<br>";
+    if (bloque(node)) out += "<br>";
   };
   el.childNodes.forEach((c) => walk(c, { italic: false, bold: false }));
-  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+  const ultimo = el.lastChild;
+  if (ultimo && ultimo.nodeType === 1 && bloque(ultimo) && out.endsWith("<br>")) {
+    out = out.slice(0, -4);
+  }
+  return out;
 }
 
 function ligarFormato(root, area) {

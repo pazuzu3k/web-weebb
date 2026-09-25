@@ -199,7 +199,7 @@ export function sanearTexto(input: string) {
     }
   }
   while (open.length) out += "</" + open.pop() + ">";
-  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+  return out;
 }
 
 function textoPlano(html: string) {

@@ -1167,6 +1167,7 @@ html[data-pagina="escalera"] #territorio {
 .cuerpo-montaje {
   max-width: 42rem;
   line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .img-montaje {
