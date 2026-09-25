@@ -1218,8 +1218,25 @@ html[data-pagina="escalera"] #territorio {
   font-size: 1.1rem;
 }
 
-.peldaño .ig {
-  font-family: var(--cifra);
+.peldaño .ig-esfera {
+  display: block;
+  width: 4.6rem;
+  height: 4.6rem;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.peldaño.s1ento.abierto {
+  z-index: 8;
+}
+
+.peldaño.s1ento.abierto .peldaño-tit {
+  max-width: none;
+  overflow: visible;
 }
 
 .s1ento-msg {
@@ -1234,9 +1251,8 @@ html[data-pagina="escalera"] #territorio {
   pointer-events: none;
 }
 
-.peldaño.s1ento.abierto .peldaño-tit {
-  max-width: none;
-  font-family: var(--cifra);
+.peldaño.s1ento.abierto .contrahuella {
+  overflow: visible;
 }
 
 .huella,

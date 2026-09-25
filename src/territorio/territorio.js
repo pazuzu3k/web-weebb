@@ -937,7 +937,7 @@ function bindEscalera(el, pasos) {
       if (tipo) tipo.textContent = "";
       if (tit) {
         if (p.cls === "s1ento" && revelado) {
-          tit.innerHTML = `<span class="ig">@s1ento54_</span>`;
+          tit.innerHTML = `<img class="ig ig-esfera" src="/xerox/s1ento-esfera.png" alt="">`;
         } else if (p.cls === "ciento-uno" && i101) {
           tit.innerHTML = `<em class="i-regreso">i</em>`;
         } else {
