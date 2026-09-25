@@ -1360,11 +1360,11 @@ html[data-pagina="escalera"] #territorio {
   }
 }
 
-.titulo-diario {
-  margin: 4vh 0 32vh;
+.pieza h2.titulo-diario {
+  margin: 2vh 0 22vh;
   font-family: var(--tipo);
   font-weight: 400;
-  font-size: clamp(2.45rem, 7.2vw, 4rem);
+  font-size: clamp(2.6rem, 8vw, 4.4rem);
   line-height: 1;
   letter-spacing: 0;
 }
