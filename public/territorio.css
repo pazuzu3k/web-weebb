@@ -1362,9 +1362,11 @@ html[data-pagina="escalera"] #territorio {
 
 .pieza h2.titulo-diario {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.55rem 0.9rem;
+  align-items: flex-start;
+  width: max-content;
+  max-width: 100%;
+  position: relative;
+  z-index: 4;
   margin: 2vh 0 22vh;
   font-family: var(--tipo);
   font-weight: 400;
@@ -1374,12 +1376,19 @@ html[data-pagina="escalera"] #territorio {
 }
 
 .pieza h2.titulo-diario img {
-  height: 1.7em;
+  position: absolute;
+  left: calc(100% + 0.6rem);
+  top: -1vh;
+  height: 112vh;
   width: auto;
+  max-width: none;
   display: block;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .pieza.diario {
+  position: relative;
   min-height: 240vh;
 }
 
@@ -1398,10 +1407,10 @@ html[data-pagina="escalera"] #territorio {
 .pie-jueves img {
   display: block;
   width: auto;
-  height: min(42vh, 460px);
-  max-width: 96vw;
+  height: 78vh;
+  max-width: none;
   object-fit: contain;
-  object-position: bottom center;
+  object-position: bottom left;
 }
 
 .exceso {
