@@ -1153,15 +1153,6 @@ async function renderDiario(el) {
         <button type="submit" class="dejar">·</button>
       </form>
       <div class="entradas" data-entradas></div>
-      <div class="pdf-popup" data-pdf-popup hidden>
-        <div class="pdf-ventana" data-pdf-ventana>
-          <div class="pdf-barra" data-pdf-barra>
-            <button type="button" class="pdf-cerrar" data-pdf-cerrar>×</button>
-          </div>
-          <iframe data-pdf-frame title="pdf"></iframe>
-          <span class="pdf-asa" data-pdf-asa></span>
-        </div>
-      </div>
     </article>`;
   await bindDiario(el);
 }
@@ -1179,11 +1170,6 @@ async function bindDiario(el) {
   const drop = el.querySelector("[data-drop]");
   const box = el.querySelector("[data-entradas]");
   const estrella = el.querySelector("[data-otro]");
-  const popup = el.querySelector("[data-pdf-popup]");
-  const ventana = el.querySelector("[data-pdf-ventana]");
-  const marco = el.querySelector("[data-pdf-frame]");
-  const barra = el.querySelector("[data-pdf-barra]");
-  const asa = el.querySelector("[data-pdf-asa]");
   const exceso = el.querySelector("[data-exceso]");
   const excesoForm = el.querySelector("[data-exceso-form]");
   const excesoFile = el.querySelector("[data-exceso-file]");
@@ -1198,64 +1184,86 @@ async function bindDiario(el) {
     exceso.classList.toggle("sin-pdf", !preliminar);
   };
 
-  const cerrarPdf = () => {
-    if (!popup) return;
-    popup.hidden = true;
-    if (marco) marco.removeAttribute("src");
-  };
+  let pdfZ = 130;
   const abrirPdf = (src) => {
-    if (!popup || !marco || !src) return;
-    marco.src = src;
-    popup.hidden = false;
+    if (!src) return;
+    const abiertas = [...document.querySelectorAll(".pdf-ventana")];
+    const ya = abiertas.find((w) => w.dataset.src === src);
+    if (ya) {
+      pdfZ += 1;
+      ya.style.zIndex = String(pdfZ);
+      return;
+    }
+    const n = abiertas.length;
+    const win = document.createElement("div");
+    win.className = "pdf-ventana";
+    win.dataset.src = src;
+    pdfZ += 1;
+    win.style.zIndex = String(pdfZ);
+    win.style.left = Math.min(window.innerWidth - 300, 36 + n * 32) + "px";
+    win.style.top = Math.min(window.innerHeight - 240, 36 + n * 32) + "px";
+    win.innerHTML = `<div class="pdf-barra">
+        <button type="button" class="pdf-cerrar" data-pdf-cerrar>×</button>
+      </div>
+      <iframe title="pdf"></iframe>
+      <span class="pdf-asa"></span>`;
+    const marco = win.querySelector("iframe");
+    if (marco) marco.src = src;
+    document.body.appendChild(win);
+
+    const traer = () => {
+      pdfZ += 1;
+      win.style.zIndex = String(pdfZ);
+    };
+    win.addEventListener("pointerdown", traer);
+    win.querySelector("[data-pdf-cerrar]")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      win.remove();
+    });
+
+    const barra = win.querySelector(".pdf-barra");
+    barra?.addEventListener("pointerdown", (e) => {
+      if (e.target.closest("[data-pdf-cerrar]")) return;
+      e.preventDefault();
+      const rect = win.getBoundingClientRect();
+      const ox = e.clientX - rect.left;
+      const oy = e.clientY - rect.top;
+      barra.setPointerCapture(e.pointerId);
+      const mover = (ev) => {
+        win.style.left = Math.max(0, ev.clientX - ox) + "px";
+        win.style.top = Math.max(0, ev.clientY - oy) + "px";
+      };
+      const soltar = () => {
+        barra.removeEventListener("pointermove", mover);
+        barra.removeEventListener("pointerup", soltar);
+      };
+      barra.addEventListener("pointermove", mover);
+      barra.addEventListener("pointerup", soltar);
+    });
+
+    const asa = win.querySelector(".pdf-asa");
+    asa?.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rect = win.getBoundingClientRect();
+      const ox = e.clientX - rect.width;
+      const oy = e.clientY - rect.height;
+      asa.setPointerCapture(e.pointerId);
+      const mover = (ev) => {
+        const w = Math.min(window.innerWidth - rect.left, Math.max(280, ev.clientX - ox));
+        const h = Math.min(window.innerHeight - rect.top, Math.max(220, ev.clientY - oy));
+        win.style.width = w + "px";
+        win.style.height = h + "px";
+      };
+      const soltar = () => {
+        asa.removeEventListener("pointermove", mover);
+        asa.removeEventListener("pointerup", soltar);
+      };
+      asa.addEventListener("pointermove", mover);
+      asa.addEventListener("pointerup", soltar);
+    });
   };
-  popup?.querySelector("[data-pdf-cerrar]")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    cerrarPdf();
-  });
-
-  barra?.addEventListener("pointerdown", (e) => {
-    if (!ventana || e.target.closest("[data-pdf-cerrar]")) return;
-    e.preventDefault();
-    const rect = ventana.getBoundingClientRect();
-    const ox = e.clientX - rect.left;
-    const oy = e.clientY - rect.top;
-    barra.setPointerCapture(e.pointerId);
-    const mover = (ev) => {
-      const maxL = window.innerWidth - 80;
-      const maxT = window.innerHeight - 48;
-      ventana.style.left = Math.min(maxL, Math.max(0, ev.clientX - ox)) + "px";
-      ventana.style.top = Math.min(maxT, Math.max(0, ev.clientY - oy)) + "px";
-    };
-    const soltar = () => {
-      barra.removeEventListener("pointermove", mover);
-      barra.removeEventListener("pointerup", soltar);
-    };
-    barra.addEventListener("pointermove", mover);
-    barra.addEventListener("pointerup", soltar);
-  });
-
-  asa?.addEventListener("pointerdown", (e) => {
-    if (!ventana) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const rect = ventana.getBoundingClientRect();
-    const ox = e.clientX - rect.width;
-    const oy = e.clientY - rect.height;
-    asa.setPointerCapture(e.pointerId);
-    const mover = (ev) => {
-      const w = Math.min(window.innerWidth - rect.left, Math.max(280, ev.clientX - ox));
-      const h = Math.min(window.innerHeight - rect.top, Math.max(220, ev.clientY - oy));
-      ventana.style.width = w + "px";
-      ventana.style.height = h + "px";
-    };
-    const soltar = () => {
-      asa.removeEventListener("pointermove", mover);
-      asa.removeEventListener("pointerup", soltar);
-    };
-    asa.addEventListener("pointermove", mover);
-    asa.addEventListener("pointerup", soltar);
-  });
 
   const pintarOtro = (on) => {
     if (estrella) estrella.hidden = !on;
