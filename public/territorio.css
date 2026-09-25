@@ -1377,7 +1377,7 @@ html[data-pagina="escalera"] #territorio {
 
 .pieza h2.titulo-diario img {
   position: absolute;
-  left: calc(100% + 0.6rem);
+  left: calc(100% + 12vw);
   top: -1vh;
   height: 33.6vh;
   width: auto;
