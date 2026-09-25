@@ -386,17 +386,6 @@ function bindHome(root) {
     win.remove();
   };
 
-  const onEsc = (e) => {
-    if (e.key !== "Escape") return;
-    const wins = [...capa.querySelectorAll(".ventana")];
-    const top = wins.sort(
-      (a, b) => (Number(b.style.zIndex) || 0) - (Number(a.style.zIndex) || 0),
-    )[0];
-    if (top) cerrar(top);
-  };
-  window.addEventListener("keydown", onEsc);
-  root._homeOff = () => window.removeEventListener("keydown", onEsc);
-
   root.querySelectorAll(".letrero[data-letrero]").forEach((btn) => {
     onActivate(btn, () => {
       const id = btn.getAttribute("data-letrero");
@@ -1219,9 +1208,10 @@ async function bindDiario(el) {
     marco.src = src;
     popup.hidden = false;
   };
-  popup?.querySelector("[data-pdf-cerrar]")?.addEventListener("click", cerrarPdf);
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") cerrarPdf();
+  popup?.querySelector("[data-pdf-cerrar]")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    cerrarPdf();
   });
 
   barra?.addEventListener("pointerdown", (e) => {
