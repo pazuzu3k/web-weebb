@@ -105,19 +105,118 @@ export async function listDiario(): Promise<DiarioEntrada[]> {
   }));
 }
 
+function escapeHtml(s: string) {
+  return String(s).replace(/[&<>"]/g, (ch) => {
+    if (ch === "&") return "\u0026amp;";
+    if (ch === "<") return "\u0026lt;";
+    if (ch === ">") return "\u0026gt;";
+    return "\u0026quot;";
+  });
+}
+
+export function sanearTexto(input: string) {
+  const src = String(input || "").slice(0, MAX_TEXTO);
+  const re = /<\/?([a-zA-Z0-9]+)(\s[^<>]*)?\/?>|([^<]+)|</g;
+  let out = "";
+  let m: RegExpExecArray | null;
+  const open: string[] = [];
+  const spanStack: string[][] = [];
+  const map: Record<string, string> = {
+    b: "strong",
+    strong: "strong",
+    i: "em",
+    em: "em",
+    u: "u",
+    s: "s",
+    strike: "s",
+    del: "s",
+  };
+  while ((m = re.exec(src))) {
+    if (m[3] != null) {
+      out += escapeHtml(m[3]);
+      continue;
+    }
+    if (!m[1]) {
+      out += "\u0026lt;";
+      continue;
+    }
+    const name = m[1].toLowerCase();
+    const closing = m[0].startsWith("</");
+    const attrs = (m[2] || "").toLowerCase();
+    if (name === "br") {
+      if (!closing) out += "<br>";
+      continue;
+    }
+    if (name === "p" || name === "div" || name === "li") {
+      if (closing) out += "<br>";
+      continue;
+    }
+    if (name === "span") {
+      if (!closing) {
+        const wraps: string[] = [];
+        if (/font-weight:\s*(bold|[6-9]00)/.test(attrs)) wraps.push("strong");
+        if (/font-style:\s*italic/.test(attrs)) wraps.push("em");
+        if (/text-decoration:[^;"]*underline/.test(attrs)) wraps.push("u");
+        spanStack.push(wraps);
+        wraps.forEach((t) => {
+          open.push(t);
+          out += "<" + t + ">";
+        });
+      } else {
+        const wraps = spanStack.pop() || [];
+        for (let i = wraps.length - 1; i >= 0; i--) {
+          const t = wraps[i];
+          const j = open.lastIndexOf(t);
+          if (j >= 0) {
+            open.splice(j, 1);
+            out += "</" + t + ">";
+          }
+        }
+      }
+      continue;
+    }
+    const tag = map[name];
+    if (!tag) continue;
+    if (closing) {
+      const j = open.lastIndexOf(tag);
+      if (j >= 0) {
+        open.splice(j, 1);
+        out += "</" + tag + ">";
+      }
+    } else if (!m[0].endsWith("/>")) {
+      open.push(tag);
+      out += "<" + tag + ">";
+    }
+  }
+  while (open.length) out += "</" + open.pop() + ">";
+  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+}
+
+function textoPlano(html: string) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\u0026nbsp;/gi, " ")
+    .replace(/\u0026amp;/g, "&")
+    .replace(/\u0026lt;/g, "<")
+    .replace(/\u0026gt;/g, ">")
+    .replace(/\u0026quot;/g, '"')
+    .trim();
+}
+
 export async function crearDiario(input: {
   titulo?: string;
   texto: string;
   archivos: { mime: string; nombre: string; bytes: Uint8Array }[];
 }): Promise<DiarioEntrada> {
   const titulo = String(input.titulo || "").trim().slice(0, 80);
-  const texto = String(input.texto || "").slice(0, MAX_TEXTO);
+  const texto = sanearTexto(input.texto || "");
   const incoming = (input.archivos || []).slice(0, MAX_FILES);
   const archivos = incoming.filter((a) => {
     const kind = ALLOWED[a.mime];
     return kind && a.bytes && a.bytes.byteLength > 0 && a.bytes.byteLength <= MAX_BYTES;
   });
-  if (!titulo && !texto.trim() && archivos.length === 0) {
+  if (!titulo && !textoPlano(texto) && archivos.length === 0) {
     throw new Error("vacio");
   }
   const sql = await getSql();
@@ -239,7 +338,7 @@ export async function editarDiario(
 ): Promise<{ id: number; titulo: string; texto: string } | null> {
   if (!id || id < 1) return null;
   const titulo = String(input.titulo || "").trim().slice(0, 80);
-  const texto = String(input.texto || "").slice(0, MAX_TEXTO);
+  const texto = sanearTexto(input.texto || "");
   const sql = await getSql();
   const rows = await sql.query<{ id: number; titulo: string; texto: string }>(
     `update diario_entradas

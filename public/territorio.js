@@ -1088,6 +1088,129 @@ function escapeHtml(s) {
   });
 }
 
+function sanearTexto(input) {
+  const src = String(input || "").slice(0, 20000);
+  const re = /<\/?([a-zA-Z0-9]+)(\s[^<>]*)?\/?>|([^<]+)|</g;
+  let out = "";
+  let m;
+  const open = [];
+  const spanStack = [];
+  const map = { b: "strong", strong: "strong", i: "em", em: "em", u: "u", s: "s", strike: "s", del: "s" };
+  while ((m = re.exec(src))) {
+    if (m[3] != null) {
+      out += escapeHtml(m[3]);
+      continue;
+    }
+    if (!m[1]) {
+      out += "\u0026lt;";
+      continue;
+    }
+    const name = m[1].toLowerCase();
+    const closing = m[0].startsWith("</");
+    const attrs = (m[2] || "").toLowerCase();
+    if (name === "br") {
+      if (!closing) out += "<br>";
+      continue;
+    }
+    if (name === "p" || name === "div" || name === "li") {
+      if (closing) out += "<br>";
+      continue;
+    }
+    if (name === "span") {
+      if (!closing) {
+        const wraps = [];
+        if (/font-weight:\s*(bold|[6-9]00)/.test(attrs)) wraps.push("strong");
+        if (/font-style:\s*italic/.test(attrs)) wraps.push("em");
+        if (/text-decoration:[^;"]*underline/.test(attrs)) wraps.push("u");
+        spanStack.push(wraps);
+        wraps.forEach((t) => {
+          open.push(t);
+          out += "<" + t + ">";
+        });
+      } else {
+        const wraps = spanStack.pop() || [];
+        for (let i = wraps.length - 1; i >= 0; i--) {
+          const t = wraps[i];
+          const j = open.lastIndexOf(t);
+          if (j >= 0) {
+            open.splice(j, 1);
+            out += "</" + t + ">";
+          }
+        }
+      }
+      continue;
+    }
+    const tag = map[name];
+    if (!tag) continue;
+    if (closing) {
+      const j = open.lastIndexOf(tag);
+      if (j >= 0) {
+        open.splice(j, 1);
+        out += "</" + tag + ">";
+      }
+    } else if (!m[0].endsWith("/>")) {
+      open.push(tag);
+      out += "<" + tag + ">";
+    }
+  }
+  while (open.length) out += "</" + open.pop() + ">";
+  return out.replace(/(?:<br>\s*){3,}/g, "<br><br>").replace(/^(?:<br>\s*)+|(?:<br>\s*)+$/g, "");
+}
+
+function textoPlano(html) {
+  return String(html || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\u0026nbsp;/gi, " ")
+    .replace(/\u0026amp;/g, "&")
+    .replace(/\u0026lt;/g, "<")
+    .replace(/\u0026gt;/g, ">")
+    .replace(/\u0026quot;/g, '"')
+    .trim();
+}
+
+function htmlTexto(raw) {
+  const s = String(raw || "");
+  if (!s.trim()) return "";
+  const limpio = /<[a-z]/i.test(s) ? sanearTexto(s) : escapeHtml(s).replace(/\n/g, "<br>");
+  return limpio ? `<div class="cuerpo-montaje">${limpio}</div>` : "";
+}
+
+function ponerTexto(el, raw) {
+  if (!el) return;
+  const s = String(raw || "");
+  if (/<[a-z]/i.test(s)) el.innerHTML = sanearTexto(s);
+  else el.textContent = s;
+}
+
+function ligarTexto(area) {
+  if (!area || area._rico) return;
+  area._rico = true;
+  area.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const html = e.clipboardData?.getData("text/html") || "";
+    const plano = e.clipboardData?.getData("text/plain") || "";
+    const limpio = html ? sanearTexto(html) : escapeHtml(plano).replace(/\n/g, "<br>");
+    area.focus();
+    document.execCommand("insertHTML", false, limpio);
+  });
+}
+
+function ligarFormato(root, area) {
+  ligarTexto(area);
+  root.querySelectorAll("[data-fmt]").forEach((b) => {
+    if (b._fmt) return;
+    b._fmt = true;
+    b.addEventListener("mousedown", (e) => e.preventDefault());
+    b.addEventListener("click", (e) => {
+      e.preventDefault();
+      area.focus();
+      document.execCommand(b.getAttribute("data-fmt"), false);
+    });
+  });
+}
+
+
 function cifraFecha(iso) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -1098,8 +1221,7 @@ function cifraFecha(iso) {
 }
 
 function htmlEntrada(e, dueno) {
-  const texto = escapeHtml(e.texto || "").replace(/\n/g, "<br>");
-  const cuerpo = texto ? `<div class="cuerpo-montaje">${texto}</div>` : "";
+  const cuerpo = htmlTexto(e.texto || "");
   const media = (e.archivos || [])
     .map((a) => {
       const src = a.src || "/api/diario/archivo/" + a.id;
@@ -1148,7 +1270,11 @@ async function renderDiario(el) {
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
         <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-        <textarea name="texto" rows="9" autocomplete="off"></textarea>
+        <div class="formato">
+          <button type="button" data-fmt="bold">negrita</button>
+          <button type="button" data-fmt="italic">cursiva</button>
+        </div>
+        <div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
           <button type="button" class="clip" data-clip>adjunto</button>
@@ -1170,7 +1296,8 @@ async function bindDiario(el) {
   const abrir = el.querySelector("[data-abrir]");
   const salir = el.querySelector("[data-salir]");
   const no = el.querySelector("[data-sesion-no]");
-  const area = form?.querySelector("textarea");
+  const area = form?.querySelector("[data-texto]");
+  if (form && area) ligarFormato(form, area);
   const input = el.querySelector("[data-files]");
   const clip = el.querySelector("[data-clip]");
   const lista = el.querySelector("[data-lista]");
@@ -1474,10 +1601,10 @@ async function bindDiario(el) {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const texto = area ? area.value : "";
+    const texto = area ? sanearTexto(area.innerHTML) : "";
     const titulo = form.querySelector("[name=titulo]");
     const tituloTxt = titulo ? titulo.value : "";
-    if (!tituloTxt.trim() && !texto.trim() && !pending.length) return;
+    if (!tituloTxt.trim() && !textoPlano(texto) && !pending.length) return;
     form.classList.add("enviando");
     const fd = new FormData();
     fd.append("titulo", tituloTxt);
@@ -1505,7 +1632,7 @@ async function bindDiario(el) {
       form.classList.remove("enviando");
       return;
     }
-    if (area) area.value = "";
+    if (area) area.innerHTML = "";
     if (titulo) titulo.value = "";
     pending.length = 0;
     pintarLista();
@@ -1530,9 +1657,11 @@ async function bindDiario(el) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><textarea name="texto" rows="6"></textarea><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">negrita</button><button type="button" data-fmt="italic">cursiva</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
-      formEd.texto.value = item.texto || "";
+      ponerTexto(rico, item.texto || "");
+      ligarFormato(formEd, rico);
       if (cuando) cuando.hidden = true;
       if (cuerpo) cuerpo.hidden = true;
       art.insertBefore(formEd, cuando || cuerpo || art.querySelector("img, a"));
@@ -1547,7 +1676,7 @@ async function bindDiario(el) {
             body: JSON.stringify({
               id: item.id,
               titulo: formEd.titulo.value,
-              texto: formEd.texto.value,
+              texto: sanearTexto(rico.innerHTML),
             }),
           });
           if (r.status === 401) {

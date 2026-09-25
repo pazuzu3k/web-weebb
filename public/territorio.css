@@ -1411,18 +1411,22 @@ html[data-pagina="escalera"] #territorio {
 
 .pieza.diario {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   min-height: 240vh;
 }
 
 .pie-jueves {
-  position: fixed;
-  left: 0;
+  position: relative;
+  left: auto;
   right: auto;
-  bottom: 0;
-  z-index: 25;
+  bottom: auto;
+  z-index: 1;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
+  margin-top: auto;
   pointer-events: none;
 }
 
@@ -1551,7 +1555,27 @@ html[data-pagina="escalera"] #territorio {
   max-width: 38rem;
 }
 
-.hoja-diario textarea {
+.formato {
+  display: flex;
+  gap: 1.1rem;
+  margin: 0 0 0.2rem;
+}
+
+.formato button {
+  min-height: 36px;
+  font-family: var(--tipo);
+  font-size: 0.95rem;
+}
+
+.formato button[data-fmt="bold"] {
+  font-weight: 700;
+}
+
+.formato button[data-fmt="italic"] {
+  font-style: italic;
+}
+
+.texto-rico {
   display: block;
   width: 100%;
   min-height: 10rem;
@@ -1565,12 +1589,24 @@ html[data-pagina="escalera"] #territorio {
   font-family: var(--tipo);
   font-size: 1.12rem;
   line-height: 1.55;
-  resize: vertical;
+  white-space: pre-wrap;
 }
 
-.hoja-diario textarea:focus {
+.texto-rico:focus {
   outline: none;
   border-bottom-color: var(--tinta);
+}
+
+.cuerpo-montaje strong {
+  font-weight: 700;
+}
+
+.cuerpo-montaje em {
+  font-style: italic;
+}
+
+.cuerpo-montaje u {
+  text-decoration: underline;
 }
 
 .adjunto-zona {
@@ -1666,24 +1702,10 @@ html[data-pagina="escalera"] #territorio {
   letter-spacing: 0.12em;
 }
 
-.editar-entrada textarea {
-  display: block;
-  width: 100%;
+.editar-entrada .texto-rico {
   min-height: 6rem;
-  margin: 0 0 0.6rem;
-  padding: 0.4rem 0;
-  border: 0;
-  border-bottom: 1px solid var(--gris-claro);
-  border-radius: 0;
-  background: transparent;
-  color: var(--tinta);
-  font-family: var(--tipo);
-  font-size: 1.12rem;
-  line-height: 1.55;
-  resize: vertical;
 }
 
-.editar-entrada textarea:focus,
 .editar-entrada .titulo-entrada:focus {
   outline: none;
   border-bottom-color: var(--tinta);
@@ -1733,7 +1755,7 @@ html[data-pagina="escalera"] #territorio {
 }
 
 @media (max-width: 640px) {
-  .hoja-diario textarea {
+  .texto-rico {
     font-size: 16px;
   }
 }
