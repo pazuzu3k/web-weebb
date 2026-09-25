@@ -898,6 +898,9 @@ function renderEscalera(el) {
         ${cabZzz({ invisible: true })}
       </header>
       <div class="escalera" data-escalera>${bloques}</div>
+      <button type="button" class="ig-popup" data-ig-popup hidden>
+        <img src="/xerox/s1ento-esfera.png" alt="">
+      </button>
       <p class="s1ento-msg" data-s1ento hidden>@s1ento54_</p>
     </div>`;
   bindEscalera(el, pasos);
@@ -917,6 +920,7 @@ function bindEscalera(el, pasos) {
   let revelado = false;
   let i101 = false;
   const msg = el.querySelector("[data-s1ento]");
+  const popup = el.querySelector("[data-ig-popup]");
 
   const paint = () => {
     const origin = Math.round(t) - Math.floor(vis / 2);
@@ -927,7 +931,6 @@ function bindEscalera(el, pasos) {
       node.style.setProperty("--i", String(idx));
       node.setAttribute("href", p.href || "#");
       let extra = "";
-      if (p.cls === "s1ento" && revelado) extra = " abierto";
       if (p.cls === "ciento-uno" && i101) extra = " abierto";
       node.className = "peldaño " + (p.cls || "") + extra;
       const num = node.querySelector(".peldaño-n");
@@ -936,9 +939,7 @@ function bindEscalera(el, pasos) {
       if (num) num.textContent = p.n;
       if (tipo) tipo.textContent = "";
       if (tit) {
-        if (p.cls === "s1ento" && revelado) {
-          tit.innerHTML = `<img class="ig ig-esfera" src="/xerox/s1ento-esfera.png" alt="">`;
-        } else if (p.cls === "ciento-uno" && i101) {
+        if (p.cls === "ciento-uno" && i101) {
           tit.innerHTML = `<em class="i-regreso">i</em>`;
         } else {
           tit.textContent = "";
@@ -949,6 +950,7 @@ function bindEscalera(el, pasos) {
       node.style.pointerEvents = d > vis / 2 - 2 ? "none" : "auto";
     });
     if (msg) msg.hidden = !revelado;
+    if (popup) popup.hidden = !revelado;
   };
 
   const step = (dt) => {
@@ -967,7 +969,7 @@ function bindEscalera(el, pasos) {
   };
 
   const onDown = (e) => {
-    if (e.target.closest(".cab-escalera, .atras, .zzz, a.peldaño")) return;
+    if (e.target.closest(".cab-escalera, .atras, .zzz, a.peldaño, .ig-popup")) return;
     touching = true;
     lastY = e.clientY;
     try {
@@ -1000,10 +1002,6 @@ function bindEscalera(el, pasos) {
     if (!a) return;
     if (a.classList.contains("s1ento")) {
       e.preventDefault();
-      if (revelado && e.target.closest(".ig")) {
-        location.href = "https://www.instagram.com/s1ento54_";
-        return;
-      }
       revelado = true;
       paint();
       return;
@@ -1018,6 +1016,12 @@ function bindEscalera(el, pasos) {
       paint();
     }
   };
+
+  popup?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    location.href = "https://www.instagram.com/s1ento54_";
+  });
 
   page.addEventListener("wheel", onWheel, { passive: false });
   page.addEventListener("pointerdown", onDown);
