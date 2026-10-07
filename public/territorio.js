@@ -480,7 +480,7 @@ function aplicarDuenoHome(on) {
 function htmlHojaVentana() {
   return `<form class="hoja-diario hoja-ventana" data-ventana-form hidden>
       <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-      <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+      <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
       <button type="submit" class="dejar">·</button>
     </form>
     <div class="entradas entradas-ventana" data-entradas></div>`;
@@ -549,7 +549,7 @@ async function bindHojaVentana(win, lugar) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -1300,6 +1300,24 @@ function escapeHtml(s) {
   });
 }
 
+function hrefSeguro(v) {
+  let s = String(v || "")
+    .trim()
+    .replace(/\u0026amp;/g, "&")
+    .replace(/\u0026quot;/g, '"');
+  if (!s || /[\s<>"]/.test(s)) return "";
+  if (/^(javascript|data|vbscript):/i.test(s)) return "";
+  if (/^https?:\/\//i.test(s) || /^mailto:/i.test(s)) return s;
+  if (/^\/(?!\/)/.test(s)) return s;
+  if (/^[\w.-]+\.[a-z]{2,}([\/?#].*)?$/i.test(s)) return "https://" + s;
+  return "";
+}
+
+function hrefDeAttrs(raw) {
+  const m = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(raw || "");
+  return hrefSeguro(m ? m[1] || m[2] || m[3] || "" : "");
+}
+
 function sanearTexto(input) {
   const src = String(input || "").slice(0, 20000);
   const re = /<\/?([a-zA-Z0-9]+)(\s[^<>]*)?\/?>|([^<]+)|</g;
@@ -1322,6 +1340,27 @@ function sanearTexto(input) {
     const attrs = (m[2] || "").toLowerCase();
     if (name === "br") {
       if (!closing) out += "<br>";
+      continue;
+    }
+    if (name === "a") {
+      if (!closing) {
+        const href = hrefDeAttrs(m[2] || "");
+        if (href) {
+          open.push("a");
+          out +=
+            '<a href="' +
+            escapeHtml(href) +
+            '" target="_blank" rel="noopener noreferrer">';
+        } else open.push("#");
+      } else {
+        for (let i = open.length - 1; i >= 0; i--) {
+          if (open[i] === "a" || open[i] === "#") {
+            const t = open.splice(i, 1)[0];
+            if (t === "a") out += "</a>";
+            break;
+          }
+        }
+      }
       continue;
     }
     if (name === "p" || name === "div" || name === "li") {
@@ -1398,6 +1437,9 @@ function ponerTexto(el, raw) {
 function ligarTexto(area) {
   if (!area || area._rico) return;
   area._rico = true;
+  area.addEventListener("click", (e) => {
+    if (e.target.closest("a")) e.preventDefault();
+  });
   area.addEventListener("paste", (e) => {
     e.preventDefault();
     const html = e.clipboardData?.getData("text/html") || "";
@@ -1454,6 +1496,23 @@ function leerFormato(el) {
       out += "<br>";
       return;
     }
+    if (node.tagName === "A") {
+      const href = hrefSeguro(node.getAttribute("href") || "");
+      const antes = out.length;
+      const estiloN = marcaFormato(node);
+      node.childNodes.forEach((c) => walk(c, estiloN));
+      if (href) {
+        const inner = out.slice(antes);
+        out =
+          out.slice(0, antes) +
+          '<a href="' +
+          escapeHtml(href) +
+          '" target="_blank" rel="noopener noreferrer">' +
+          inner +
+          "</a>";
+      }
+      return;
+    }
     const estiloN = marcaFormato(node);
     node.childNodes.forEach((c) => walk(c, estiloN));
     if (bloque(node)) out += "<br>";
@@ -1478,7 +1537,35 @@ function ligarFormato(root, area) {
     b.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      document.execCommand(b.getAttribute("data-fmt"), false);
+      const cmd = b.getAttribute("data-fmt");
+      if (cmd === "link") {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        const rango = sel.getRangeAt(0).cloneRange();
+        if (rango.collapsed || !area.contains(rango.commonAncestorContainer)) return;
+        const campo = root.querySelector("[data-enlace]");
+        if (!campo) return;
+        campo.hidden = false;
+        campo.value = "";
+        campo.focus();
+        campo.onkeydown = (ev) => {
+          if (ev.key !== "Enter" && ev.key !== "Escape") return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          const href = ev.key === "Enter" ? hrefSeguro(campo.value) : "";
+          campo.hidden = true;
+          campo.value = "";
+          area.focus();
+          const s = window.getSelection();
+          if (s) {
+            s.removeAllRanges();
+            s.addRange(rango);
+          }
+          if (href) document.execCommand("createLink", false, href);
+        };
+        return;
+      }
+      document.execCommand(cmd, false);
     });
   });
 }
@@ -1543,7 +1630,7 @@ async function renderDiario(el) {
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
         <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-        <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+        <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
           <button type="button" class="clip" data-clip>adjunto</button>
@@ -1926,7 +2013,7 @@ async function bindDiario(el) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");

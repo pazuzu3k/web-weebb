@@ -1620,6 +1620,29 @@ html[data-pagina="escalera"] #territorio {
   font-style: italic;
 }
 
+.enlace-url {
+  width: 14rem;
+  margin-left: 0.35rem;
+  border: 0;
+  border-bottom: 1px solid var(--gris-claro);
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--tipo);
+  font-size: 0.95rem;
+}
+
+.enlace-url[hidden] {
+  display: none;
+}
+
+.texto-rico a,
+.cuerpo-montaje a {
+  background: #ececec;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 .texto-rico {
   display: block;
   width: 100%;

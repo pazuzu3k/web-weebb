@@ -124,6 +124,24 @@ function escapeHtml(s: string) {
   });
 }
 
+function hrefSeguro(v: string) {
+  let s = String(v || "")
+    .trim()
+    .replace(/\u0026amp;/g, "&")
+    .replace(/\u0026quot;/g, '"');
+  if (!s || /[\s<>"]/.test(s)) return "";
+  if (/^(javascript|data|vbscript):/i.test(s)) return "";
+  if (/^https?:\/\//i.test(s) || /^mailto:/i.test(s)) return s;
+  if (/^\/(?!\/)/.test(s)) return s;
+  if (/^[\w.-]+\.[a-z]{2,}([\/?#].*)?$/i.test(s)) return "https://" + s;
+  return "";
+}
+
+function hrefDeAttrs(raw: string) {
+  const m = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(raw || "");
+  return hrefSeguro(m ? m[1] || m[2] || m[3] || "" : "");
+}
+
 export function sanearTexto(input: string) {
   const src = String(input || "").slice(0, MAX_TEXTO);
   const re = /<\/?([a-zA-Z0-9]+)(\s[^<>]*)?\/?>|([^<]+)|</g;
@@ -155,6 +173,27 @@ export function sanearTexto(input: string) {
     const attrs = (m[2] || "").toLowerCase();
     if (name === "br") {
       if (!closing) out += "<br>";
+      continue;
+    }
+    if (name === "a") {
+      if (!closing) {
+        const href = hrefDeAttrs(m[2] || "");
+        if (href) {
+          open.push("a");
+          out +=
+            '<a href="' +
+            escapeHtml(href) +
+            '" target="_blank" rel="noopener noreferrer">';
+        } else open.push("#");
+      } else {
+        for (let i = open.length - 1; i >= 0; i--) {
+          if (open[i] === "a" || open[i] === "#") {
+            const t = open.splice(i, 1)[0];
+            if (t === "a") out += "</a>";
+            break;
+          }
+        }
+      }
       continue;
     }
     if (name === "p" || name === "div" || name === "li") {
