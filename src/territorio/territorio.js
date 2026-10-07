@@ -1300,6 +1300,23 @@ function escapeHtml(s) {
   });
 }
 
+function decodeEntities(s) {
+  let cur = String(s || "");
+  for (let i = 0; i < 8; i++) {
+    const next = cur
+      .replace(/\u0026amp;/gi, "&")
+      .replace(/\u0026lt;/gi, "<")
+      .replace(/\u0026gt;/gi, ">")
+      .replace(/\u0026quot;/gi, '"')
+      .replace(/\u0026#0*39;/g, "'")
+      .replace(/\u0026apos;/gi, "'")
+      .replace(/\u0026nbsp;/gi, " ");
+    if (next === cur) break;
+    cur = next;
+  }
+  return cur;
+}
+
 function hrefSeguro(v) {
   let s = String(v || "")
     .trim()
@@ -1328,7 +1345,7 @@ function sanearTexto(input) {
   const map = { b: "strong", strong: "strong", i: "em", em: "em", u: "u", s: "s", strike: "s", del: "s" };
   while ((m = re.exec(src))) {
     if (m[3] != null) {
-      out += escapeHtml(m[3]);
+      out += escapeHtml(decodeEntities(m[3]));
       continue;
     }
     if (!m[1]) {
@@ -1423,7 +1440,7 @@ function textoPlano(html) {
 function htmlTexto(raw) {
   const s = String(raw || "");
   if (!s.trim()) return "";
-  const limpio = /<[a-z]/i.test(s) ? sanearTexto(s) : escapeHtml(s).replace(/\n/g, "<br>");
+  const limpio = /<[a-z]/i.test(s) ? sanearTexto(s) : escapeHtml(decodeEntities(s)).replace(/\n/g, "<br>");
   return limpio ? `<div class="cuerpo-montaje">${limpio}</div>` : "";
 }
 
@@ -1431,7 +1448,7 @@ function ponerTexto(el, raw) {
   if (!el) return;
   const s = String(raw || "");
   if (/<[a-z]/i.test(s)) el.innerHTML = sanearTexto(s);
-  else el.textContent = s;
+  else el.textContent = decodeEntities(s);
 }
 
 function ligarTexto(area) {

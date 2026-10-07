@@ -124,6 +124,23 @@ function escapeHtml(s: string) {
   });
 }
 
+function decodeEntities(s: string) {
+  let cur = String(s || "");
+  for (let i = 0; i < 8; i++) {
+    const next = cur
+      .replace(/\u0026amp;/gi, "&")
+      .replace(/\u0026lt;/gi, "<")
+      .replace(/\u0026gt;/gi, ">")
+      .replace(/\u0026quot;/gi, '"')
+      .replace(/\u0026#0*39;/g, "'")
+      .replace(/\u0026apos;/gi, "'")
+      .replace(/\u0026nbsp;/gi, " ");
+    if (next === cur) break;
+    cur = next;
+  }
+  return cur;
+}
+
 function hrefSeguro(v: string) {
   let s = String(v || "")
     .trim()
@@ -161,7 +178,7 @@ export function sanearTexto(input: string) {
   };
   while ((m = re.exec(src))) {
     if (m[3] != null) {
-      out += escapeHtml(m[3]);
+      out += escapeHtml(decodeEntities(m[3]));
       continue;
     }
     if (!m[1]) {
