@@ -11,7 +11,7 @@ window.SMIOOCHY = {
       tag = document.createElement("p");
       tag.setAttribute("data-visitas-dueno", "");
       tag.style.cssText =
-        "position:fixed;right:12px;bottom:10px;z-index:40;margin:0;font:11px ui-monospace,monospace;color:#6a6560;letter-spacing:.04em;pointer-events:none";
+        "position:fixed;right:12px;bottom:10px;z-index:80;margin:0;font:11px ui-monospace,monospace;color:#6a6560;letter-spacing:.04em;pointer-events:none";
       document.body.appendChild(tag);
     }
     tag.textContent = String(n || 0);
@@ -42,10 +42,21 @@ window.SMIOOCHY = {
       })
       .catch(quitar);
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", leer);
-  } else {
+  function arrancar() {
     leer();
+    document.addEventListener("submit", function (e) {
+      if (e.target && e.target.matches && e.target.matches("[data-home-sesion]")) {
+        setTimeout(leer, 400);
+      }
+    });
+    document.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t && t.closest && t.closest("[data-home-salir]")) setTimeout(leer, 400);
+    });
   }
-  document.addEventListener("smioochy-sesion", leer);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", arrancar);
+  } else {
+    arrancar();
+  }
 })();
