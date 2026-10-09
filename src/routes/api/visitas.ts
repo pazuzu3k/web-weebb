@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { bumpPageview, getPageview } from "@/lib/visitas.server";
+import { sesionUsuario } from "@/lib/diario-auth.server";
+import { bumpPageview, getPageview, getTotalPageviews } from "@/lib/visitas.server";
 
 export const Route = createFileRoute("/api/visitas")({
   server: {
@@ -7,6 +8,13 @@ export const Route = createFileRoute("/api/visitas")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         const path = url.searchParams.get("path") || "/";
+        if (url.searchParams.get("total") === "1") {
+          if (!sesionUsuario(request)) {
+            return Response.json({ n: 0 }, { status: 401 });
+          }
+          const n = await getTotalPageviews();
+          return Response.json({ path: "*", n });
+        }
         const n = await getPageview(path);
         return Response.json({ path, n });
       },
@@ -18,8 +26,11 @@ export const Route = createFileRoute("/api/visitas")({
         } catch {
           /* empty body */
         }
+        if (sesionUsuario(request)) {
+          return Response.json({ path, n: 0, counted: false });
+        }
         const n = await bumpPageview(path);
-        return Response.json({ path, n });
+        return Response.json({ path, n, counted: true });
       },
     },
   },
