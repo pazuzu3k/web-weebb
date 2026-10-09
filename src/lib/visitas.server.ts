@@ -34,6 +34,18 @@ export async function getPageview(path: string): Promise<number> {
   }
 }
 
+export async function getTotalPageviews(): Promise<number> {
+  try {
+    const sql = await getSql();
+    const rows = await sql.query<{ n: number }>(
+      `select coalesce(sum(n), 0)::int as n from pageviews`,
+    );
+    return rows[0]?.n ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function heartbeat(
   sessionKey: string,
   path: string,
