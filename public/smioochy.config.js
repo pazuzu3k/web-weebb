@@ -5,6 +5,46 @@ window.SMIOOCHY = {
 };
 
 (function visitasDueno() {
+  var espera = 60000;
+  var fetchNativo = window.fetch.bind(window);
+
+  function sesionAbierta() {
+    return fetchNativo("/api/diario/sesion", { credentials: "same-origin" })
+      .then(function (s) {
+        return s.ok ? s.json() : {};
+      })
+      .then(function (data) {
+        return !!(data && data.ok);
+      })
+      .catch(function () {
+        return false;
+      });
+  }
+
+  window.fetch = function (url, opts) {
+    var href = typeof url === "string" ? url : url && url.url;
+    var method = (opts && opts.method) || (url && url.method) || "GET";
+    if (href && String(href).indexOf("/api/visitas") !== -1 && String(method).toUpperCase() === "POST") {
+      return new Promise(function (resolve) {
+        setTimeout(function () {
+          sesionAbierta().then(function (abierta) {
+            if (abierta) {
+              resolve(
+                new Response(JSON.stringify({ counted: false }), {
+                  status: 200,
+                  headers: { "content-type": "application/json" },
+                }),
+              );
+              return;
+            }
+            resolve(fetchNativo(url, opts));
+          });
+        }, espera);
+      });
+    }
+    return fetchNativo(url, opts);
+  };
+
   function pintar(n) {
     var tag = document.querySelector("[data-visitas-dueno]");
     if (!tag) {
@@ -21,33 +61,25 @@ window.SMIOOCHY = {
     if (tag) tag.remove();
   }
   function leer() {
-    return fetch("/api/diario/sesion", { credentials: "same-origin" })
-      .then(function (s) {
-        return s.ok ? s.json() : {};
-      })
-      .then(function (data) {
-        if (!data || !data.ok) {
+    return sesionAbierta().then(function (abierta) {
+      if (!abierta) {
+        quitar();
+        return false;
+      }
+      var path = location.pathname || "/";
+      return fetchNativo("/api/visitas?path=" + encodeURIComponent(path), {
+        credentials: "same-origin",
+      }).then(function (r) {
+        if (!r.ok) {
           quitar();
           return false;
         }
-        var path = location.pathname || "/";
-        return fetch("/api/visitas?path=" + encodeURIComponent(path), {
-          credentials: "same-origin",
-        }).then(function (r) {
-          if (!r.ok) {
-            quitar();
-            return false;
-          }
-          return r.json().then(function (j) {
-            pintar(j.n);
-            return true;
-          });
+        return r.json().then(function (j) {
+          pintar(j.n);
+          return true;
         });
-      })
-      .catch(function () {
-        quitar();
-        return false;
       });
+    });
   }
   function reintentar() {
     var n = 0;
