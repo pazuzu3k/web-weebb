@@ -21,37 +21,50 @@ window.SMIOOCHY = {
     if (tag) tag.remove();
   }
   function leer() {
-    fetch("/api/diario/sesion", { credentials: "same-origin" })
+    return fetch("/api/diario/sesion", { credentials: "same-origin" })
       .then(function (s) {
         return s.ok ? s.json() : {};
       })
       .then(function (data) {
         if (!data || !data.ok) {
           quitar();
-          return;
+          return false;
         }
-        return fetch("/api/visitas?total=1", { credentials: "same-origin" }).then(function (r) {
+        var path = location.pathname || "/";
+        return fetch("/api/visitas?path=" + encodeURIComponent(path), {
+          credentials: "same-origin",
+        }).then(function (r) {
           if (!r.ok) {
             quitar();
-            return;
+            return false;
           }
           return r.json().then(function (j) {
             pintar(j.n);
+            return true;
           });
         });
       })
-      .catch(quitar);
+      .catch(function () {
+        quitar();
+        return false;
+      });
+  }
+  function reintentar() {
+    var n = 0;
+    var id = setInterval(function () {
+      n += 1;
+      leer();
+      if (n >= 6) clearInterval(id);
+    }, 700);
   }
   function arrancar() {
     leer();
     document.addEventListener("submit", function (e) {
-      if (e.target && e.target.matches && e.target.matches("[data-home-sesion]")) {
-        setTimeout(leer, 400);
-      }
+      if (e.target && e.target.matches && e.target.matches("form")) reintentar();
     });
     document.addEventListener("click", function (e) {
       var t = e.target;
-      if (t && t.closest && t.closest("[data-home-salir]")) setTimeout(leer, 400);
+      if (t && t.closest && t.closest("[data-home-salir]")) setTimeout(leer, 500);
     });
   }
   if (document.readyState === "loading") {
