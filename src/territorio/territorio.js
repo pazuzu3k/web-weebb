@@ -1632,7 +1632,7 @@ async function renderDiario(el) {
         ${cabZzz({ invisible: true })}
       </header>
       <h2 class="titulo-diario"><span>jueves</span><img src="/xerox/jueves-titulo.png" alt=""></h2>
-      <p class="exceso sin-pdf" data-exceso>exceso preliminar</p>
+      <p class="exceso sin-pdf" data-exceso>excesos preliminares</p>
       <form class="exceso-adj" data-exceso-form hidden>
         <input type="file" accept="application/pdf" hidden data-exceso-file>
         <button type="button" class="clip" data-exceso-clip>pdf</button>
