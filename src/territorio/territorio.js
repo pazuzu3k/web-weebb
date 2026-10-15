@@ -1670,7 +1670,7 @@ async function puerta55() {
   });
 }
 
-function renderDiario(el) {
+async function renderDiario(el) {
   el.setAttribute("data-pagina", "peldano");
   el.setAttribute("data-peldano", "55");
   el.setAttribute("data-strato", "intervencion");
