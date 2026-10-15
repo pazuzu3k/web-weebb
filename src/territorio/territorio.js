@@ -1883,9 +1883,51 @@ async function bindDiario(el) {
   });
 
   abrir?.addEventListener("click", () => {
-    if (abrir) abrir.hidden = true;
-    if (sesion) sesion.hidden = false;
-    sesion?.querySelector("input")?.focus();
+    if (document.querySelector("[data-clave-55]")) return;
+    const win = document.createElement("div");
+    win.className = "ventana flotante";
+    win.setAttribute("data-clave-55", "");
+    win.style.position = "fixed";
+    win.style.left = "50%";
+    win.style.top = "28%";
+    win.style.transform = "translateX(-50%)";
+    win.style.zIndex = "90";
+    win.innerHTML = `<div class="barra"><span>clave</span><button type="button" class="cerrar" aria-label="cerrar">×</button></div>
+      <form class="cuerpo hoja-sesion" data-clave-form style="padding:14px 16px 16px">
+        <input name="clave" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+        <p class="sesion-no" data-clave-no hidden>no</p>
+        <button type="submit">entrar</button>
+      </form>`;
+    document.body.appendChild(win);
+    win.querySelector("input")?.focus();
+    win.querySelector(".cerrar")?.addEventListener("click", () => win.remove());
+    win.querySelector("[data-clave-form]")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const mal = win.querySelector("[data-clave-no]");
+      if (mal) mal.hidden = true;
+      try {
+        const r = await fetch("/api/diario/sesion", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            user: "purplehair",
+            pass: String(fd.get("clave") || ""),
+          }),
+        });
+        if (!r.ok) {
+          if (mal) mal.hidden = false;
+          return;
+        }
+        const data = await r.json().catch(() => ({}));
+        win.remove();
+        mostrar(true);
+        pintarOtro(!!data.otro);
+        pintarEntradas(cache);
+      } catch {
+        if (mal) mal.hidden = false;
+      }
+    });
   });
 
   sesion?.addEventListener("submit", async (e) => {
