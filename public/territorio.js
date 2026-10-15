@@ -633,7 +633,7 @@ async function abrirVentana(capa, id, traer, cerrar) {
   capa.appendChild(win);
   traer(win);
   const cuerpo = win.querySelector("[data-cuerpo]");
-  if (L.seccion === "antipodas" || L.seccion === "hizo") {
+  if (L.seccion === "hizo") {
     cuerpo.innerHTML = htmlHojaVentana();
     await bindHojaVentana(win, "ventana-" + L.letra);
   } else {
