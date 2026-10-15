@@ -1619,12 +1619,64 @@ function htmlEntrada(e, dueno) {
   </article>`;
 }
 
-async function renderDiario(el) {
+async 
+async function puerta55() {
+  try {
+    const s = await fetch("/api/diario/puerta", { credentials: "same-origin" });
+    const data = s.ok ? await s.json() : {};
+    if (data.ok) return true;
+  } catch {
+    /* pide clave */
+  }
+  return new Promise((resolve) => {
+    const win = document.createElement("div");
+    win.className = "ventana flotante";
+    win.setAttribute("data-puerta-55", "");
+    win.style.position = "fixed";
+    win.style.left = "50%";
+    win.style.top = "28%";
+    win.style.transform = "translateX(-50%)";
+    win.style.zIndex = "120";
+    win.innerHTML = `<div class="barra"><span>clave</span></div>
+      <form class="cuerpo hoja-sesion" style="padding:14px 16px 16px">
+        <input name="clave" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
+        <p class="sesion-no" data-puerta-no hidden>no</p>
+        <button type="submit">entrar</button>
+      </form>`;
+    document.body.appendChild(win);
+    win.querySelector("input")?.focus();
+    win.querySelector("form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const mal = win.querySelector("[data-puerta-no]");
+      if (mal) mal.hidden = true;
+      try {
+        const r = await fetch("/api/diario/puerta", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ clave: String(fd.get("clave") || "") }),
+        });
+        if (!r.ok) {
+          if (mal) mal.hidden = false;
+          return;
+        }
+        win.remove();
+        resolve(true);
+      } catch {
+        if (mal) mal.hidden = false;
+      }
+    });
+  });
+}
+
+function renderDiario(el) {
   el.setAttribute("data-pagina", "peldano");
   el.setAttribute("data-peldano", "55");
   el.setAttribute("data-strato", "intervencion");
   el.setAttribute("data-estado", "ocupada");
   tocarPagina("diario-55");
+  if (!(await puerta55())) return;
   el.innerHTML = `
     <article class="pieza diario">
       <span class="otro-sesion" data-otro hidden>*</span>
@@ -1882,56 +1934,11 @@ async function bindDiario(el) {
     }
   });
 
-  const pedirClave = () => {
-    if (dueno) return;
-    if (document.querySelector("[data-clave-55]")) return;
-    const win = document.createElement("div");
-    win.className = "ventana flotante";
-    win.setAttribute("data-clave-55", "");
-    win.style.position = "fixed";
-    win.style.left = "50%";
-    win.style.top = "28%";
-    win.style.transform = "translateX(-50%)";
-    win.style.zIndex = "90";
-    win.innerHTML = `<div class="barra"><span>clave</span></div>
-      <form class="cuerpo hoja-sesion" data-clave-form style="padding:14px 16px 16px">
-        <input name="clave" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
-        <p class="sesion-no" data-clave-no hidden>no</p>
-        <button type="submit">entrar</button>
-      </form>`;
-    document.body.appendChild(win);
-    win.querySelector("input")?.focus();
-    win.querySelector("[data-clave-form]")?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const mal = win.querySelector("[data-clave-no]");
-      if (mal) mal.hidden = true;
-      try {
-        const r = await fetch("/api/diario/sesion", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            user: "purplehair",
-            pass: String(fd.get("clave") || ""),
-          }),
-        });
-        if (!r.ok) {
-          if (mal) mal.hidden = false;
-          return;
-        }
-        const data = await r.json().catch(() => ({}));
-        win.remove();
-        mostrar(true);
-        pintarOtro(!!data.otro);
-        pintarEntradas(cache);
-      } catch {
-        if (mal) mal.hidden = false;
-      }
-    });
-  };
-
-  abrir?.addEventListener("click", pedirClave);
-  if (!dueno) pedirClave();
+  abrir?.addEventListener("click", () => {
+    if (abrir) abrir.hidden = true;
+    if (sesion) sesion.hidden = false;
+    sesion?.querySelector("input")?.focus();
+  });
 
   sesion?.addEventListener("submit", async (e) => {
     e.preventDefault();
