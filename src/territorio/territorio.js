@@ -1613,13 +1613,6 @@ function htmlEntrada(e, dueno) {
 }
 
 async function puerta55() {
-  try {
-    const s = await fetch("/api/diario/puerta", { credentials: "same-origin" });
-    const data = s.ok ? await s.json() : {};
-    if (data.ok) return true;
-  } catch {
-    /* pide clave */
-  }
   return new Promise((resolve) => {
     const win = document.createElement("div");
     win.className = "ventana flotante";
