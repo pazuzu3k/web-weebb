@@ -1619,7 +1619,6 @@ function htmlEntrada(e, dueno) {
   </article>`;
 }
 
-async 
 async function puerta55() {
   try {
     const s = await fetch("/api/diario/puerta", { credentials: "same-origin" });
