@@ -11,11 +11,6 @@ const CUENTAS = [
     salt: "b6fc3e1581782cb69aae2d8b35a3a3a6",
     hash: "98dee7b2d9c43cbd59bb002ec102395a194bc9d8ce512812d7e5bdcd1e8f7daf",
   },
-  {
-    user: "purplehair",
-    salt: "acbd637df8c97f13a89fa3d6430e95b6",
-    hash: "afab5219f226aae0cae0203d0e92b8b9d8f40ad140d484771cd4a5de96cbaa45",
-  },
 ];
 const SECRET = "9af28b3143333d0f2a03c0d71f2f23015830e16a9a2c6b62f781b2ffff34f632";
 const COOKIE = "smioochy_sesion";
@@ -23,6 +18,18 @@ const MAX_AGE = 60 * 60 * 24 * 30;
 
 function sign(body: string) {
   return createHmac("sha256", SECRET).update(body).digest("base64url");
+}
+
+const PUERTA = {
+  salt: "acbd637df8c97f13a89fa3d6430e95b6",
+  hash: "afab5219f226aae0cae0203d0e92b8b9d8f40ad140d484771cd4a5de96cbaa45",
+};
+
+export function clavePuerta(pass: string) {
+  const got = scryptSync(pass, PUERTA.salt, 32);
+  const want = Buffer.from(PUERTA.hash, "hex");
+  if (got.length !== want.length) return false;
+  return timingSafeEqual(got, want);
 }
 
 export function credencialesValidas(user: string, pass: string) {
