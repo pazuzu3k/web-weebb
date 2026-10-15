@@ -1882,7 +1882,8 @@ async function bindDiario(el) {
     }
   });
 
-  abrir?.addEventListener("click", () => {
+  const pedirClave = () => {
+    if (dueno) return;
     if (document.querySelector("[data-clave-55]")) return;
     const win = document.createElement("div");
     win.className = "ventana flotante";
@@ -1892,7 +1893,7 @@ async function bindDiario(el) {
     win.style.top = "28%";
     win.style.transform = "translateX(-50%)";
     win.style.zIndex = "90";
-    win.innerHTML = `<div class="barra"><span>clave</span><button type="button" class="cerrar" aria-label="cerrar">×</button></div>
+    win.innerHTML = `<div class="barra"><span>clave</span></div>
       <form class="cuerpo hoja-sesion" data-clave-form style="padding:14px 16px 16px">
         <input name="clave" type="password" autocomplete="current-password" autocapitalize="off" spellcheck="false">
         <p class="sesion-no" data-clave-no hidden>no</p>
@@ -1900,7 +1901,6 @@ async function bindDiario(el) {
       </form>`;
     document.body.appendChild(win);
     win.querySelector("input")?.focus();
-    win.querySelector(".cerrar")?.addEventListener("click", () => win.remove());
     win.querySelector("[data-clave-form]")?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
@@ -1928,7 +1928,10 @@ async function bindDiario(el) {
         if (mal) mal.hidden = false;
       }
     });
-  });
+  };
+
+  abrir?.addEventListener("click", pedirClave);
+  if (!dueno) pedirClave();
 
   sesion?.addEventListener("submit", async (e) => {
     e.preventDefault();
