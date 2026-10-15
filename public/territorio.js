@@ -1113,7 +1113,6 @@ function renderEscalera(el) {
       <button type="button" class="ig-popup" data-ig-popup hidden>
         <img src="/xerox/s1ento-esfera.png" alt="">
       </button>
-      <p class="s1ento-msg" data-s1ento hidden>@s1ento54_</p>
     </div>`;
   bindEscalera(el, pasos);
 }
@@ -1161,7 +1160,6 @@ function bindEscalera(el, pasos) {
       node.style.opacity = d > vis / 2 - 1.5 ? "0" : "";
       node.style.pointerEvents = d > vis / 2 - 2 ? "none" : "auto";
     });
-    if (msg) msg.hidden = !revelado;
     if (popup) popup.hidden = !revelado;
   };
 
@@ -1229,11 +1227,6 @@ function bindEscalera(el, pasos) {
     }
   };
 
-  popup?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    location.href = "https://www.instagram.com/s1ento54_";
-  });
 
   page.addEventListener("wheel", onWheel, { passive: false });
   page.addEventListener("pointerdown", onDown);
