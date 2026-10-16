@@ -154,6 +154,15 @@ function hrefSeguro(v: string) {
   return "";
 }
 
+function esAnexo(href: string) {
+  return href.startsWith("/anexo/") || href.startsWith("/api/diario/archivo/");
+}
+
+function kindDeAttrs(raw: string) {
+  const m = /data-kind\s*=\s*(?:"(pdf|imagen)"|'(pdf|imagen)'|(pdf|imagen))/i.exec(raw || "");
+  return m ? m[1] || m[2] || m[3] || "" : "";
+}
+
 function hrefDeAttrs(raw: string) {
   const m = /href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(raw || "");
   return hrefSeguro(m ? m[1] || m[2] || m[3] || "" : "");
@@ -195,7 +204,16 @@ export function sanearTexto(input: string) {
     if (name === "a") {
       if (!closing) {
         const href = hrefDeAttrs(m[2] || "");
-        if (href) {
+        const kind = kindDeAttrs(m[2] || "");
+        if (href && esAnexo(href)) {
+          open.push("a");
+          out +=
+            '<a href="' +
+            escapeHtml(href) +
+            '" data-anexo="1" class="anexo-link"' +
+            (kind ? ' data-kind="' + kind + '"' : "") +
+            ">";
+        } else if (href) {
           open.push("a");
           out +=
             '<a href="' +
@@ -275,6 +293,7 @@ export async function crearDiario(input: {
   texto: string;
   lugar?: string;
   archivos: { mime: string; nombre: string; bytes: Uint8Array }[];
+  anexos?: { token: string; mime: string; nombre: string; bytes: Uint8Array }[];
 }): Promise<DiarioEntrada> {
   const titulo = String(input.titulo || "").trim().slice(0, 80);
   const texto = sanearTexto(input.texto || "");
@@ -319,13 +338,43 @@ export async function crearDiario(input: {
       });
     }
   }
+  const textoAnexo = await guardarAnexos(row.id, input.anexos || [], texto);
   return {
     id: row.id,
     titulo: row.titulo || "",
-    texto: row.texto,
+    texto: textoAnexo,
     createdAt: row.created_at,
     archivos: metas,
   };
+}
+
+
+async function guardarAnexos(
+  entradaId: number,
+  anexos: { token: string; mime: string; nombre: string; bytes: Uint8Array }[],
+  texto: string,
+) {
+  let out = texto;
+  const sql = await getSql();
+  for (const a of anexos) {
+    const token = String(a.token || "").replace(/[^a-z0-9]/gi, "");
+    const kind = ALLOWED[a.mime];
+    if (!token || !kind || !a.bytes?.byteLength || a.bytes.byteLength > MAX_BYTES) continue;
+    const nombre = (a.nombre || "adjunto").replace(/[^\w.\-áéíóúñ ]/gi, "").slice(0, 80) || "adjunto";
+    const saved = await sql.query<{ id: number }>(
+      `insert into diario_archivos (entrada_id, kind, mime, nombre, bytes)
+       values ($1, $2, $3, $4, $5)
+       returning id`,
+      [entradaId, kind, a.mime, nombre, Buffer.from(a.bytes)],
+    );
+    const id = saved[0]?.id;
+    if (!id) continue;
+    out = out.split("/anexo/" + token).join("/api/diario/archivo/" + id);
+  }
+  if (out !== texto) {
+    await sql.query(`update diario_entradas set texto = $1 where id = $2`, [out, entradaId]);
+  }
+  return out;
 }
 
 export async function getArchivo(id: number): Promise<{
@@ -402,7 +451,11 @@ export async function getPreliminar(): Promise<{
 
 export async function editarDiario(
   id: number,
-  input: { titulo?: string; texto?: string },
+  input: {
+    titulo?: string;
+    texto?: string;
+    anexos?: { token: string; mime: string; nombre: string; bytes: Uint8Array }[];
+  },
 ): Promise<{ id: number; titulo: string; texto: string } | null> {
   if (!id || id < 1) return null;
   const titulo = String(input.titulo || "").trim().slice(0, 80);
@@ -417,7 +470,8 @@ export async function editarDiario(
   );
   const row = rows[0];
   if (!row) return null;
-  return { id: row.id, titulo: row.titulo || "", texto: row.texto };
+  const textoAnexo = await guardarAnexos(row.id, input.anexos || [], row.texto);
+  return { id: row.id, titulo: row.titulo || "", texto: textoAnexo };
 }
 
 export async function borrarDiario(id: number): Promise<boolean> {
