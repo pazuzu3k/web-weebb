@@ -6,6 +6,24 @@ function negar() {
   return Response.json({ ok: false }, { status: 401 });
 }
 
+async function leerAnexos(form: FormData) {
+  const tokens = form.getAll("anexo_token").map((v) => String(v || ""));
+  const files = form.getAll("anexo_file");
+  const out: { token: string; mime: string; nombre: string; bytes: Uint8Array }[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const f = files[i];
+    if (!(f instanceof File)) continue;
+    out.push({
+      token: tokens[i],
+      mime: f.type || "application/octet-stream",
+      nombre: f.name || "adjunto",
+      bytes: new Uint8Array(await f.arrayBuffer()),
+    });
+  }
+  return out;
+}
+
+
 export const Route = createFileRoute("/api/diario/")({
   server: {
     handlers: {
@@ -37,11 +55,13 @@ export const Route = createFileRoute("/api/diario/")({
               bytes: buf,
             });
           }
+          const anexos = await leerAnexos(form);
           const entrada = await crearDiario({
             titulo,
             texto,
             lugar: String(form.get("lugar") || ""),
             archivos,
+            anexos,
           });
           return Response.json({ entrada });
         } catch (err) {
@@ -54,13 +74,25 @@ export const Route = createFileRoute("/api/diario/")({
       PATCH: async ({ request }) => {
         if (!sesionActiva(request)) return negar();
         try {
-          const body = await request.json();
-          const id = Number(body?.id);
+          const tipo = request.headers.get("content-type") || "";
+          let id = 0;
+          let titulo = "";
+          let texto = "";
+          let anexos: { token: string; mime: string; nombre: string; bytes: Uint8Array }[] = [];
+          if (tipo.includes("multipart/form-data")) {
+            const form = await request.formData();
+            id = Number(form.get("id"));
+            titulo = String(form.get("titulo") || "");
+            texto = String(form.get("texto") || "");
+            anexos = await leerAnexos(form);
+          } else {
+            const body = await request.json();
+            id = Number(body?.id);
+            titulo = body?.titulo;
+            texto = body?.texto;
+          }
           if (!id) return Response.json({ ok: false }, { status: 400 });
-          const entrada = await editarDiario(id, {
-            titulo: body?.titulo,
-            texto: body?.texto,
-          });
+          const entrada = await editarDiario(id, { titulo, texto, anexos });
           if (!entrada) return Response.json({ ok: false }, { status: 404 });
           return Response.json({ entrada });
         } catch (err) {
