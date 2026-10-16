@@ -1711,7 +1711,12 @@ function cifraFecha(iso) {
 
 function htmlEntrada(e, dueno) {
   const cuerpo = htmlTexto(e.texto || "");
+  const ligados = new Set();
+  const re = /\/api\/diario\/archivo\/(\d+)/g;
+  let m;
+  while ((m = re.exec(e.texto || ""))) ligados.add(Number(m[1]));
   const media = (e.archivos || [])
+    .filter((a) => !ligados.has(Number(a.id)))
     .map((a) => {
       const src = a.src || "/api/diario/archivo/" + a.id;
       if (a.kind === "pdf") {
