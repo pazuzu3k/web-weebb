@@ -480,7 +480,7 @@ function aplicarDuenoHome(on) {
 function htmlHojaVentana() {
   return `<form class="hoja-diario hoja-ventana" data-ventana-form hidden>
       <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-      <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+      <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><button type="button" data-fmt="anexo">links</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
       <button type="submit" class="dejar">·</button>
     </form>
     <div class="entradas entradas-ventana" data-entradas></div>`;
@@ -519,6 +519,7 @@ async function bindHojaVentana(win, lugar) {
     fd.append("titulo", tituloTxt);
     fd.append("texto", texto);
     fd.append("lugar", lugar);
+    anexosDe(area, fd);
     try {
       const r = await fetch("/api/diario/", { method: "POST", body: fd });
       if (r.status === 401) {
@@ -538,6 +539,12 @@ async function bindHojaVentana(win, lugar) {
     form.classList.remove("enviando");
   });
   box?.addEventListener("click", async (e) => {
+    const anexo = e.target.closest("a.anexo-link");
+    if (anexo) {
+      e.preventDefault();
+      abrirAnexo(anexo.getAttribute("href") || "", anexo.getAttribute("data-kind") || "");
+      return;
+    }
     const editar = e.target.closest("[data-editar]");
     if (editar) {
       if (!duenoHome) return;
@@ -549,7 +556,7 @@ async function bindHojaVentana(win, lugar) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><button type="button" data-fmt="anexo">links</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -562,15 +569,29 @@ async function bindHojaVentana(win, lugar) {
         if (!duenoHome) return;
         formEd.classList.add("enviando");
         try {
-          const r = await fetch("/api/diario/", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              id: item.id,
-              titulo: formEd.titulo.value,
-              texto: leerFormato(rico),
-            }),
-          });
+          const textoEd = leerFormato(rico);
+          const tieneAnexos = rico && rico._anexos && rico._anexos.size;
+          const r = tieneAnexos
+            ? await fetch("/api/diario/", {
+                method: "PATCH",
+                body: (() => {
+                  const fd = new FormData();
+                  fd.append("id", String(item.id));
+                  fd.append("titulo", formEd.titulo.value);
+                  fd.append("texto", textoEd);
+                  anexosDe(rico, fd);
+                  return fd;
+                })(),
+              })
+            : await fetch("/api/diario/", {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  id: item.id,
+                  titulo: formEd.titulo.value,
+                  texto: textoEd,
+                }),
+              });
           if (r.status === 401) {
             aplicarDuenoHome(false);
             return;
@@ -1355,7 +1376,18 @@ function sanearTexto(input) {
     if (name === "a") {
       if (!closing) {
         const href = hrefDeAttrs(m[2] || "");
-        if (href) {
+        const kindM = /data-kind\s*=\s*(?:"(pdf|imagen)"|'(pdf|imagen)'|(pdf|imagen))/i.exec(m[2] || "");
+        const kind = kindM ? kindM[1] || kindM[2] || kindM[3] || "" : "";
+        const anexo = href.indexOf("/anexo/") === 0 || href.indexOf("/api/diario/archivo/") === 0;
+        if (href && anexo) {
+          open.push("a");
+          out +=
+            '<a href="' +
+            escapeHtml(href) +
+            '" data-anexo="1" class="anexo-link"' +
+            (kind ? ' data-kind="' + kind + '"' : "") +
+            ">";
+        } else if (href) {
           open.push("a");
           out +=
             '<a href="' +
@@ -1508,6 +1540,12 @@ function leerFormato(el) {
     }
     if (node.tagName === "A") {
       const href = hrefSeguro(node.getAttribute("href") || "");
+      const anexo =
+        node.getAttribute("data-anexo") ||
+        node.classList.contains("anexo-link") ||
+        href.indexOf("/anexo/") === 0 ||
+        href.indexOf("/api/diario/archivo/") === 0;
+      const kind = node.getAttribute("data-kind") === "pdf" ? "pdf" : "imagen";
       const antes = out.length;
       const estiloN = marcaFormato(node);
       node.childNodes.forEach((c) => walk(c, estiloN));
@@ -1515,9 +1553,15 @@ function leerFormato(el) {
         const inner = out.slice(antes);
         out =
           out.slice(0, antes) +
-          '<a href="' +
-          escapeHtml(href) +
-          '" target="_blank" rel="noopener noreferrer">' +
+          (anexo
+            ? '<a href="' +
+              escapeHtml(href) +
+              '" data-anexo="1" class="anexo-link" data-kind="' +
+              kind +
+              '">'
+            : '<a href="' +
+              escapeHtml(href) +
+              '" target="_blank" rel="noopener noreferrer">') +
           inner +
           "</a>";
       }
@@ -1535,6 +1579,56 @@ function leerFormato(el) {
   return out;
 }
 
+
+function pedirAnexo(onFile) {
+  if (document.querySelector("[data-anexo-pedir]")) return;
+  const win = document.createElement("div");
+  win.className = "ventana flotante";
+  win.setAttribute("data-anexo-pedir", "");
+  win.style.position = "fixed";
+  win.style.left = "50%";
+  win.style.top = "28%";
+  win.style.transform = "translateX(-50%)";
+  win.style.zIndex = "140";
+  win.innerHTML = `<div class="barra"><span>links</span><button type="button" class="cerrar" aria-label="cerrar">×</button></div>
+    <form class="cuerpo hoja-sesion" style="padding:14px 16px 16px">
+      <p>imagen o pdf</p>
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" data-anexo-file>
+    </form>`;
+  document.body.appendChild(win);
+  win.querySelector(".cerrar")?.addEventListener("click", () => win.remove());
+  win.querySelector("[data-anexo-file]")?.addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const ok = /^image\/(jpeg|jpg|png|webp|gif)$/i.test(f.type) || f.type === "application/pdf";
+    if (!ok || f.size > 4.5 * 1024 * 1024) return;
+    win.remove();
+    onFile(f);
+  });
+}
+
+function abrirAnexo(src, kind) {
+  if (!src) return;
+  const win = document.createElement("div");
+  win.className = "ventana flotante anexo-ventana";
+  win.style.zIndex = "150";
+  const cuerpo = kind === "pdf"
+    ? `<iframe title="pdf" src="${src}"></iframe>`
+    : `<img src="${src}" alt="">`;
+  win.innerHTML = `<div class="barra"><span></span><button type="button" class="cerrar" aria-label="cerrar">×</button></div>${cuerpo}`;
+  document.body.appendChild(win);
+  win.querySelector(".cerrar")?.addEventListener("click", () => win.remove());
+}
+
+function anexosDe(area, fd) {
+  const map = area && area._anexos;
+  if (!map) return;
+  map.forEach((file, token) => {
+    fd.append("anexo_token", token);
+    fd.append("anexo_file", file);
+  });
+}
+
 function ligarFormato(root, area) {
   ligarTexto(area);
   if (!area) return;
@@ -1548,6 +1642,31 @@ function ligarFormato(root, area) {
       e.preventDefault();
       e.stopPropagation();
       const cmd = b.getAttribute("data-fmt");
+      if (cmd === "anexo") {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        const rango = sel.getRangeAt(0).cloneRange();
+        if (rango.collapsed || !area.contains(rango.commonAncestorContainer)) return;
+        pedirAnexo((file) => {
+          const token = "a" + Math.random().toString(36).slice(2, 10);
+          const kind = file.type === "application/pdf" ? "pdf" : "imagen";
+          const palabra = escapeHtml(rango.toString());
+          if (!area._anexos) area._anexos = new Map();
+          area._anexos.set(token, file);
+          area.focus();
+          const s = window.getSelection();
+          if (s) {
+            s.removeAllRanges();
+            s.addRange(rango);
+          }
+          document.execCommand(
+            "insertHTML",
+            false,
+            '<a href="/anexo/' + token + '" data-anexo="' + token + '" class="anexo-link" data-kind="' + kind + '">' + palabra + "</a>",
+          );
+        });
+        return;
+      }
       if (cmd === "link") {
         const sel = window.getSelection();
         if (!sel || !sel.rangeCount) return;
@@ -1684,7 +1803,7 @@ async function renderDiario(el) {
       <button type="button" class="salir-diario" data-salir hidden>salir</button>
       <form class="hoja-diario" data-diario hidden>
         <input name="titulo" class="titulo-entrada" autocomplete="off" maxlength="80" placeholder="título">
-        <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
+        <div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><button type="button" data-fmt="anexo">links</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div>
         <div class="adjunto-zona" data-drop>
           <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" multiple hidden data-files>
           <button type="button" class="clip" data-clip>adjunto</button>
@@ -2020,6 +2139,7 @@ async function bindDiario(el) {
     fd.append("titulo", tituloTxt);
     fd.append("texto", texto);
     pending.forEach((f) => fd.append("archivos", f));
+    anexosDe(area, fd);
     let ok = false;
     if (remoto) {
       try {
@@ -2056,6 +2176,12 @@ async function bindDiario(el) {
       abrirPdf(pdf.getAttribute("data-pdf"));
       return;
     }
+    const anexo = e.target.closest("a.anexo-link");
+    if (anexo) {
+      e.preventDefault();
+      abrirAnexo(anexo.getAttribute("href") || "", anexo.getAttribute("data-kind") || "");
+      return;
+    }
     const editar = e.target.closest("[data-editar]");
     if (editar) {
       if (!dueno) return;
@@ -2067,7 +2193,7 @@ async function bindDiario(el) {
       const cuerpo = art.querySelector(".cuerpo-montaje");
       const formEd = document.createElement("form");
       formEd.className = "editar-entrada";
-      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
+      formEd.innerHTML = `<input name="titulo" class="titulo-entrada" maxlength="80" autocomplete="off" placeholder="título"><div class="formato"><button type="button" data-fmt="bold">b</button><button type="button" data-fmt="italic">s</button><button type="button" data-fmt="link">↗</button><button type="button" data-fmt="anexo">links</button><input class="enlace-url" data-enlace placeholder="https://" hidden></div><div class="texto-rico" data-texto contenteditable="true" role="textbox" aria-multiline="true"></div><button type="submit" class="dejar">·</button>`;
       const rico = formEd.querySelector("[data-texto]");
       formEd.titulo.value = item.titulo || "";
       ponerTexto(rico, item.texto || "");
@@ -2080,15 +2206,29 @@ async function bindDiario(el) {
         if (!dueno) return;
         formEd.classList.add("enviando");
         try {
-          const r = await fetch("/api/diario/", {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              id: item.id,
-              titulo: formEd.titulo.value,
-              texto: leerFormato(rico),
-            }),
-          });
+          const textoEd = leerFormato(rico);
+          const tieneAnexos = rico && rico._anexos && rico._anexos.size;
+          const r = tieneAnexos
+            ? await fetch("/api/diario/", {
+                method: "PATCH",
+                body: (() => {
+                  const fd = new FormData();
+                  fd.append("id", String(item.id));
+                  fd.append("titulo", formEd.titulo.value);
+                  fd.append("texto", textoEd);
+                  anexosDe(rico, fd);
+                  return fd;
+                })(),
+              })
+            : await fetch("/api/diario/", {
+                method: "PATCH",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                  id: item.id,
+                  titulo: formEd.titulo.value,
+                  texto: textoEd,
+                }),
+              });
           if (r.status === 401) {
             mostrar(false);
             pintarEntradas(cache);
