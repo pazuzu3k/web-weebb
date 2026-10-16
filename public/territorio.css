@@ -1830,3 +1830,29 @@ html[data-pagina="escalera"] #territorio {
     font-size: 16px;
   }
 }
+
+.anexo-link {
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  cursor: pointer;
+}
+
+.anexo-ventana {
+  position: fixed;
+  left: 50%;
+  top: 10%;
+  transform: translateX(-50%);
+  width: min(680px, 92vw);
+  max-height: 82vh;
+  overflow: auto;
+  z-index: 150;
+}
+
+.anexo-ventana img,
+.anexo-ventana iframe {
+  display: block;
+  width: 100%;
+  max-height: 72vh;
+  border: 0;
+  background: #fff;
+}
