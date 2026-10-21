@@ -1616,7 +1616,7 @@ function abrirAnexo(src, kind, titulo) {
   win.style.zIndex = String(220 + n);
   const cuerpo = kind === "pdf"
     ? `<iframe title="pdf" src="${src}"></iframe>`
-    : `<img src="${src}" alt="">`;
+    : `<img src="${src}" alt="" draggable="false">`;
   win.style.width = "420px";
   win.style.height = "360px";
   win.innerHTML = `<div class="win95-barra" data-win95-barra>
@@ -1633,17 +1633,16 @@ function abrirAnexo(src, kind, titulo) {
     const rect = win.getBoundingClientRect();
     const ox = ev.clientX - rect.left;
     const oy = ev.clientY - rect.top;
-    barra.setPointerCapture(ev.pointerId);
     const mover = (mv) => {
       win.style.left = mv.clientX - ox + "px";
       win.style.top = mv.clientY - oy + "px";
     };
     const soltar = () => {
-      barra.removeEventListener("pointermove", mover);
-      barra.removeEventListener("pointerup", soltar);
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
     };
-    barra.addEventListener("pointermove", mover);
-    barra.addEventListener("pointerup", soltar);
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
   });
   const grip = win.querySelector("[data-win95-grip]");
   grip?.addEventListener("pointerdown", (ev) => {

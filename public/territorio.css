@@ -2011,9 +2011,29 @@ html[data-pagina="escalera"] #territorio {
 }
 
 .win95.anexo-ventana {
+  left: auto;
+  top: auto;
+  transform: none;
   max-height: none;
   min-width: 180px;
   min-height: 120px;
+}
+
+.win95.anexo-ventana .win95-barra {
+  position: relative;
+  z-index: 2;
+  touch-action: none;
+  cursor: grab;
+}
+
+.win95.anexo-ventana .win95-barra:active {
+  cursor: grabbing;
+}
+
+.win95.anexo-ventana img {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
 }
 
 .win95.anexo-ventana .win95-cuerpo {
