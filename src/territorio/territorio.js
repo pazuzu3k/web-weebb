@@ -1709,7 +1709,7 @@ function cifraFecha(iso) {
   return dd + " · " + mm;
 }
 
-function htmlEntrada(e, dueno) {
+function htmlCuerpoEntrada(e, dueno) {
   const cuerpo = htmlTexto(e.texto || "");
   const ligados = new Set();
   const re = /\/api\/diario\/archivo\/(\d+)/g;
@@ -1725,18 +1725,68 @@ function htmlEntrada(e, dueno) {
       return `<img class="img-montaje" src="${src}" alt="">`;
     })
     .join("");
-  const titulo = escapeHtml(e.titulo || "");
   const acciones = dueno
-    ? `<button type="button" class="editar-entrada-btn" data-editar="${e.id}">editar</button><button type="button" class="borrar-entrada" data-borrar="${e.id}">×</button>`
+    ? `<p class="win95-acciones"><button type="button" class="editar-entrada-btn" data-editar="${e.id}">editar</button><button type="button" class="borrar-entrada" data-borrar="${e.id}">borrar</button></p>`
     : "";
-  return `<article class="entrada-diario" data-id="${e.id}">
-    ${acciones}
-    ${titulo ? `<p class="cuando">${titulo}</p>` : ""}
-    ${cuerpo}${media}
-  </article>`;
+  return `${acciones}${cuerpo}${media}`;
+}
+
+function htmlEntrada(e) {
+  const titulo = escapeHtml(e.titulo || "sin título");
+  return `<button type="button" class="archivo-diario" data-abrir-archivo="${e.id}">
+    <span class="archivo-ico" aria-hidden="true"></span>
+    <span class="archivo-nombre">${titulo}</span>
+  </button>`;
+}
+
+function abrirArchivo95(e, dueno) {
+  const ya = document.querySelector('.win95[data-id="' + e.id + '"]');
+  if (ya) {
+    ya.style.zIndex = String(200 + document.querySelectorAll(".win95").length);
+    return;
+  }
+  const n = document.querySelectorAll(".win95").length;
+  const win = document.createElement("div");
+  win.className = "win95";
+  win.dataset.id = String(e.id);
+  win.style.left = 80 + n * 28 + "px";
+  win.style.top = 72 + n * 28 + "px";
+  win.style.zIndex = String(200 + n);
+  const titulo = escapeHtml(e.titulo || "sin título");
+  win.innerHTML = `<div class="win95-barra" data-win95-barra>
+      <span class="win95-titulo">${titulo}</span>
+      <button type="button" class="win95-cerrar" data-win95-cerrar aria-label="cerrar">×</button>
+    </div>
+    <div class="win95-cuerpo" data-id="${e.id}">${htmlCuerpoEntrada(e, dueno)}</div>`;
+  document.body.appendChild(win);
+  const barra = win.querySelector("[data-win95-barra]");
+  barra?.addEventListener("pointerdown", (ev) => {
+    if (ev.target.closest("[data-win95-cerrar]")) return;
+    const rect = win.getBoundingClientRect();
+    const ox = ev.clientX - rect.left;
+    const oy = ev.clientY - rect.top;
+    barra.setPointerCapture(ev.pointerId);
+    const mover = (mv) => {
+      win.style.left = Math.max(0, mv.clientX - ox) + "px";
+      win.style.top = Math.max(0, mv.clientY - oy) + "px";
+    };
+    const soltar = () => {
+      barra.removeEventListener("pointermove", mover);
+      barra.removeEventListener("pointerup", soltar);
+    };
+    barra.addEventListener("pointermove", mover);
+    barra.addEventListener("pointerup", soltar);
+  });
+  win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
+  win.addEventListener("pointerdown", () => {
+    win.style.zIndex = String(200 + document.querySelectorAll(".win95").length);
+  });
 }
 
 async function puerta55() {
+  const host = location.hostname || "";
+  const enLinea = host === "smioochy.click" || host === "www.smioochy.click";
+  if (!enLinea) return true;
   return new Promise((resolve) => {
     const win = document.createElement("div");
     win.className = "ventana flotante";
@@ -1979,7 +2029,7 @@ async function bindDiario(el) {
   };
 
   const pintarEntradas = (entradas) => {
-    box.innerHTML = (entradas || []).map((e) => htmlEntrada(e, dueno)).join("");
+    box.innerHTML = (entradas || []).map((e) => htmlEntrada(e)).join("");
   };
 
   const LS = "smioochy-diario-55";
@@ -2001,7 +2051,36 @@ async function bindDiario(el) {
     preliminar = !!data.preliminar;
   } catch {
     remoto = false;
-    cache = leerLocal();
+    cache = [
+  {
+    "id": 13,
+    "titulo": "algo de Uno falta cuando se ama",
+    "texto": "\nno porque se lo haya llevado el otro \nquizá nadie se lleva nada<br>En el encuentro\napenas habla el balbuceo\nque anticipa la experiencia\nde esta lejanía que antes\nNo existia<br>\nAlgo ya no vuelve a coincidir consigo\nY queda irreductible al juego del recuerdo<br>\nCuando el otro desaparece \nLa restitución es tentadora\nPero en Uno, no se sostiene\naquello que nos excede<br>\nNo hay imagen capaz de contener\nel Vertigo de una huella <br>\nLa intimidad nos hace sensibles\nA eso que nunca nos estuvo disponible (*) –otra vez;\nproduce una Distancia\nque no se resuelve en la acumulación de iconos\no símbolos que deliren: conquista<br>\nLas estabilizaciones simbólicas buscan volver garantía\nLo que guarda su valor permaneciendo abierto<br>\n<strong>Algo de Uno en el encuentro, por fin,\nse Desvía de Uno</strong><br>\nY el otro no puede recogerlo<br>\nEl silencio producido por la última palabra;\nNo persigue un fondo escondido en el conocimiento del otro;\nCae como gota profunda de hierro \nEn el mismísimo plano de consistencia;\nDeja una extraña inclinación \nmodificando <em>campos de)(formación</em>\n",
+    "createdAt": "2026-09-25 05:28:21.950855+00",
+    "archivos": []
+  },
+  {
+    "id": 12,
+    "titulo": "⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡",
+    "texto": "romper el espejo <em>puesto</em> en el cielo",
+    "createdAt": "2026-09-25 02:27:02.276349+00",
+    "archivos": []
+  },
+  {
+    "id": 11,
+    "titulo": "⋆.˚✮☽☯︎☾✮˚.⋆",
+    "texto": "donde <strong>no</strong> reine la imagen,\nluz se prolonga en cada cosa que <em>haces</em>",
+    "createdAt": "2026-09-25 02:17:46.889845+00",
+    "archivos": []
+  },
+  {
+    "id": 10,
+    "titulo": "☾𖤓 ☾𖤓 ☾𖤓",
+    "texto": "en esta noche llena de la que mis manos no alcanzan <br>¿Quién lleva su<em> forma </em>ahora<em>\n</em>para salir a buscarla",
+    "createdAt": "2026-09-25 02:17:11.437395+00",
+    "archivos": []
+  }
+];
   }
   try {
     const s = await fetch("/api/diario/sesion");
@@ -2179,6 +2258,13 @@ async function bindDiario(el) {
     if (pdf) {
       e.preventDefault();
       abrirPdf(pdf.getAttribute("data-pdf"));
+      return;
+    }
+    const archivo = e.target.closest("[data-abrir-archivo]");
+    if (archivo) {
+      const id = archivo.getAttribute("data-abrir-archivo");
+      const item = cache.find((x) => String(x.id) === String(id));
+      if (item) abrirArchivo95(item, dueno);
       return;
     }
     const anexo = e.target.closest("a.anexo-link");
