@@ -1824,11 +1824,14 @@ function abrirArchivo95(e, dueno) {
   win.style.top = 72 + n * 28 + "px";
   alFrente(win);
   const titulo = escapeHtml(e.titulo || "sin título");
+  win.style.width = "460px";
+  win.style.height = "340px";
   win.innerHTML = `<div class="win95-barra" data-win95-barra>
       <span class="win95-titulo">${titulo}</span>
       <button type="button" class="win95-cerrar" data-win95-cerrar aria-label="cerrar">×</button>
     </div>
-    <div class="win95-cuerpo" data-id="${e.id}">${htmlCuerpoEntrada(e, dueno)}</div>`;
+    <div class="win95-cuerpo" data-id="${e.id}">${htmlCuerpoEntrada(e, dueno)}</div>
+    <div class="win95-grip" data-win95-grip></div>`;
   document.body.appendChild(win);
   const barra = win.querySelector("[data-win95-barra]");
   barra?.addEventListener("pointerdown", (ev) => {
@@ -1847,6 +1850,25 @@ function abrirArchivo95(e, dueno) {
     };
     barra.addEventListener("pointermove", mover);
     barra.addEventListener("pointerup", soltar);
+  });
+  const grip = win.querySelector("[data-win95-grip]");
+  grip?.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const startX = ev.clientX;
+    const startY = ev.clientY;
+    const startW = win.offsetWidth;
+    const startH = win.offsetHeight;
+    const mover = (mv) => {
+      win.style.width = Math.max(180, startW + mv.clientX - startX) + "px";
+      win.style.height = Math.max(120, startH + mv.clientY - startY) + "px";
+    };
+    const soltar = () => {
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+    };
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
   });
   win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
   win.addEventListener("pointerdown", () => alFrente(win));
