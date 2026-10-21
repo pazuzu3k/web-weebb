@@ -2010,7 +2010,15 @@ html[data-pagina="escalera"] #territorio {
   font-weight: 400;
 }
 
+.win95.anexo-ventana {
+  max-height: none;
+  min-width: 180px;
+  min-height: 120px;
+}
+
 .win95.anexo-ventana .win95-cuerpo {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0;
   background: #fff;
 }
@@ -2019,7 +2027,21 @@ html[data-pagina="escalera"] #territorio {
 .win95.anexo-ventana iframe {
   display: block;
   width: 100%;
-  max-height: 68vh;
+  height: 100%;
+  max-height: none;
+  object-fit: contain;
   border: 0;
   background: #fff;
+}
+
+.win95-grip {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  background:
+    linear-gradient(135deg, transparent 50%, #404040 50%, #404040 58%, transparent 58%),
+    linear-gradient(135deg, transparent 68%, #404040 68%, #404040 76%, transparent 76%);
 }

@@ -1617,21 +1617,26 @@ function abrirAnexo(src, kind, titulo) {
   const cuerpo = kind === "pdf"
     ? `<iframe title="pdf" src="${src}"></iframe>`
     : `<img src="${src}" alt="">`;
+  win.style.width = "420px";
+  win.style.height = "360px";
   win.innerHTML = `<div class="win95-barra" data-win95-barra>
       <span class="win95-titulo">${escapeHtml(titulo || "")}</span>
       <button type="button" class="win95-cerrar" data-win95-cerrar aria-label="cerrar">×</button>
     </div>
-    <div class="win95-cuerpo">${cuerpo}</div>`;
+    <div class="win95-cuerpo">${cuerpo}</div>
+    <div class="win95-grip" data-win95-grip></div>`;
   document.body.appendChild(win);
   const barra = win.querySelector("[data-win95-barra]");
   barra?.addEventListener("pointerdown", (ev) => {
     if (ev.target.closest("[data-win95-cerrar]")) return;
+    ev.preventDefault();
     const rect = win.getBoundingClientRect();
     const ox = ev.clientX - rect.left;
     const oy = ev.clientY - rect.top;
+    barra.setPointerCapture(ev.pointerId);
     const mover = (mv) => {
-      win.style.left = Math.max(0, mv.clientX - ox) + "px";
-      win.style.top = Math.max(0, mv.clientY - oy) + "px";
+      win.style.left = mv.clientX - ox + "px";
+      win.style.top = mv.clientY - oy + "px";
     };
     const soltar = () => {
       barra.removeEventListener("pointermove", mover);
@@ -1639,6 +1644,26 @@ function abrirAnexo(src, kind, titulo) {
     };
     barra.addEventListener("pointermove", mover);
     barra.addEventListener("pointerup", soltar);
+  });
+  const grip = win.querySelector("[data-win95-grip]");
+  grip?.addEventListener("pointerdown", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    const startX = ev.clientX;
+    const startY = ev.clientY;
+    const startW = win.offsetWidth;
+    const startH = win.offsetHeight;
+    grip.setPointerCapture(ev.pointerId);
+    const mover = (mv) => {
+      win.style.width = Math.max(180, startW + mv.clientX - startX) + "px";
+      win.style.height = Math.max(120, startH + mv.clientY - startY) + "px";
+    };
+    const soltar = () => {
+      grip.removeEventListener("pointermove", mover);
+      grip.removeEventListener("pointerup", soltar);
+    };
+    grip.addEventListener("pointermove", mover);
+    grip.addEventListener("pointerup", soltar);
   });
   win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
 }
