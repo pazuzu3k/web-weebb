@@ -539,12 +539,7 @@ async function bindHojaVentana(win, lugar) {
     form.classList.remove("enviando");
   });
   box?.addEventListener("click", async (e) => {
-    const anexo = e.target.closest("a.anexo-link");
-    if (anexo) {
-      e.preventDefault();
-      abrirAnexo(anexo.getAttribute("href") || "", anexo.getAttribute("data-kind") || "");
-      return;
-    }
+    if (abrirSiEsImagen(e)) return;
     const editar = e.target.closest("[data-editar]");
     if (editar) {
       if (!duenoHome) return;
@@ -1607,17 +1602,59 @@ function pedirAnexo(onFile) {
   });
 }
 
-function abrirAnexo(src, kind) {
+function esImagenHref(href) {
+  return /\.(jpe?g|png|webp|gif)(\?.*)?$/i.test(href || "");
+}
+
+function abrirAnexo(src, kind, titulo) {
   if (!src) return;
+  const n = document.querySelectorAll(".win95").length;
   const win = document.createElement("div");
-  win.className = "ventana flotante anexo-ventana";
-  win.style.zIndex = "150";
+  win.className = "win95 anexo-ventana";
+  win.style.left = 120 + n * 24 + "px";
+  win.style.top = 96 + n * 24 + "px";
+  win.style.zIndex = String(220 + n);
   const cuerpo = kind === "pdf"
     ? `<iframe title="pdf" src="${src}"></iframe>`
     : `<img src="${src}" alt="">`;
-  win.innerHTML = `<div class="barra"><span></span><button type="button" class="cerrar" aria-label="cerrar">×</button></div>${cuerpo}`;
+  win.innerHTML = `<div class="win95-barra" data-win95-barra>
+      <span class="win95-titulo">${escapeHtml(titulo || "")}</span>
+      <button type="button" class="win95-cerrar" data-win95-cerrar aria-label="cerrar">×</button>
+    </div>
+    <div class="win95-cuerpo">${cuerpo}</div>`;
   document.body.appendChild(win);
-  win.querySelector(".cerrar")?.addEventListener("click", () => win.remove());
+  const barra = win.querySelector("[data-win95-barra]");
+  barra?.addEventListener("pointerdown", (ev) => {
+    if (ev.target.closest("[data-win95-cerrar]")) return;
+    const rect = win.getBoundingClientRect();
+    const ox = ev.clientX - rect.left;
+    const oy = ev.clientY - rect.top;
+    const mover = (mv) => {
+      win.style.left = Math.max(0, mv.clientX - ox) + "px";
+      win.style.top = Math.max(0, mv.clientY - oy) + "px";
+    };
+    const soltar = () => {
+      barra.removeEventListener("pointermove", mover);
+      barra.removeEventListener("pointerup", soltar);
+    };
+    barra.addEventListener("pointermove", mover);
+    barra.addEventListener("pointerup", soltar);
+  });
+  win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
+}
+
+function abrirSiEsImagen(e) {
+  const a = e.target.closest("a");
+  if (!a) return false;
+  const href = a.getAttribute("href") || "";
+  const kind = a.getAttribute("data-kind") || "";
+  const anexo = a.classList.contains("anexo-link") || a.hasAttribute("data-anexo");
+  const imagen = kind === "imagen" || esImagenHref(href) || (anexo && kind !== "pdf");
+  if (!anexo && !imagen) return false;
+  e.preventDefault();
+  e.stopPropagation();
+  abrirAnexo(href, kind === "pdf" ? "pdf" : "imagen", a.textContent || "");
+  return true;
 }
 
 function anexosDe(area, fd) {
@@ -1780,6 +1817,9 @@ function abrirArchivo95(e, dueno) {
   win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
   win.addEventListener("pointerdown", () => {
     win.style.zIndex = String(200 + document.querySelectorAll(".win95").length);
+  });
+  win.addEventListener("click", (ev) => {
+    abrirSiEsImagen(ev);
   });
 }
 
@@ -2267,12 +2307,7 @@ async function bindDiario(el) {
       if (item) abrirArchivo95(item, dueno);
       return;
     }
-    const anexo = e.target.closest("a.anexo-link");
-    if (anexo) {
-      e.preventDefault();
-      abrirAnexo(anexo.getAttribute("href") || "", anexo.getAttribute("data-kind") || "");
-      return;
-    }
+    if (abrirSiEsImagen(e)) return;
     const editar = e.target.closest("[data-editar]");
     if (editar) {
       if (!dueno) return;
