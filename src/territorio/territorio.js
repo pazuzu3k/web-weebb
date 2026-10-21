@@ -1606,6 +1606,14 @@ function esImagenHref(href) {
   return /\.(jpe?g|png|webp|gif)(\?.*)?$/i.test(href || "");
 }
 
+
+let win95Z = 300;
+function alFrente(win) {
+  if (!win) return;
+  win95Z += 1;
+  win.style.zIndex = String(win95Z);
+}
+
 function abrirAnexo(src, kind, titulo) {
   if (!src) return;
   const n = document.querySelectorAll(".win95").length;
@@ -1613,7 +1621,7 @@ function abrirAnexo(src, kind, titulo) {
   win.className = "win95 anexo-ventana";
   win.style.left = 120 + n * 24 + "px";
   win.style.top = 96 + n * 24 + "px";
-  win.style.zIndex = String(220 + n);
+  alFrente(win);
   const cuerpo = kind === "pdf"
     ? `<iframe title="pdf" src="${src}"></iframe>`
     : `<img src="${src}" alt="" draggable="false">`;
@@ -1626,6 +1634,8 @@ function abrirAnexo(src, kind, titulo) {
     <div class="win95-cuerpo">${cuerpo}</div>
     <div class="win95-grip" data-win95-grip></div>`;
   document.body.appendChild(win);
+  alFrente(win);
+  win.addEventListener("pointerdown", () => alFrente(win));
   const barra = win.querySelector("[data-win95-barra]");
   barra?.addEventListener("pointerdown", (ev) => {
     if (ev.target.closest("[data-win95-cerrar]")) return;
@@ -1803,7 +1813,7 @@ function htmlEntrada(e) {
 function abrirArchivo95(e, dueno) {
   const ya = document.querySelector('.win95[data-id="' + e.id + '"]');
   if (ya) {
-    ya.style.zIndex = String(200 + document.querySelectorAll(".win95").length);
+    alFrente(ya);
     return;
   }
   const n = document.querySelectorAll(".win95").length;
@@ -1812,7 +1822,7 @@ function abrirArchivo95(e, dueno) {
   win.dataset.id = String(e.id);
   win.style.left = 80 + n * 28 + "px";
   win.style.top = 72 + n * 28 + "px";
-  win.style.zIndex = String(200 + n);
+  alFrente(win);
   const titulo = escapeHtml(e.titulo || "sin título");
   win.innerHTML = `<div class="win95-barra" data-win95-barra>
       <span class="win95-titulo">${titulo}</span>
@@ -1839,9 +1849,7 @@ function abrirArchivo95(e, dueno) {
     barra.addEventListener("pointerup", soltar);
   });
   win.querySelector("[data-win95-cerrar]")?.addEventListener("click", () => win.remove());
-  win.addEventListener("pointerdown", () => {
-    win.style.zIndex = String(200 + document.querySelectorAll(".win95").length);
-  });
+  win.addEventListener("pointerdown", () => alFrente(win));
   win.addEventListener("click", (ev) => {
     abrirSiEsImagen(ev);
   });
