@@ -1428,9 +1428,11 @@ html[data-pagina="escalera"] #territorio {
   align-items: flex-start;
   width: max-content;
   max-width: 100%;
-  position: relative;
-  z-index: 4;
-  margin: 2vh 0 22vh;
+  position: fixed;
+  top: 3vh;
+  left: 8vw;
+  z-index: 5;
+  margin: 0;
   font-family: var(--tipo);
   font-weight: 400;
   font-size: clamp(2.6rem, 8vw, 4.4rem);
@@ -1439,14 +1441,16 @@ html[data-pagina="escalera"] #territorio {
 }
 
 .pieza h2.titulo-diario img {
-  position: absolute;
-  left: calc(100% + 12vw);
-  top: -1vh;
-  height: 33.6vh;
+  position: fixed;
+  top: -8vh;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  height: 30vh;
   width: auto;
   max-width: none;
   display: block;
-  z-index: 2;
+  z-index: 4;
   pointer-events: none;
 }
 
@@ -1455,15 +1459,40 @@ html[data-pagina="escalera"] #territorio {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  min-height: 240vh;
+  min-height: 0;
+  padding-top: 12vh;
   padding-bottom: 0;
+}
+
+.mesa-jueves {
+  position: relative;
+  z-index: 1;
+  margin: 1vh 0 0;
+}
+
+.fondo-jueves {
+  position: relative;
+  z-index: 0;
+  display: block;
+  height: 68vh;
+  width: auto;
+  max-width: 46vw;
+  margin: 0 auto;
+  pointer-events: none;
+  object-fit: contain;
+  background: #000;
+}
+
+.pieza.diario > :not(.fondo-jueves):not(.titulo-diario) {
+  position: relative;
+  z-index: 1;
 }
 
 .pie-jueves {
   position: relative;
   z-index: 1;
   display: block;
-  margin-top: auto;
+  margin-top: 6vh;
   margin-left: -8vw;
   margin-bottom: 0;
   line-height: 0;
@@ -1857,16 +1886,19 @@ html[data-pagina="escalera"] #territorio {
   background: #fff;
 }
 
-/* —— peldaño 55: lista de archivos y ventanas 95 —— */
+/* —— peldaño 55: iconos a los lados del video, se arrastran —— */
 .pieza.diario .entradas {
-  max-width: 28rem;
-  min-height: 14rem;
-  margin: 0 0 2rem;
-  padding: 2px;
-  background: #fff;
-  border: 2px solid;
-  border-color: #808080 #fff #fff #808080;
-  box-shadow: inset 1px 1px #404040, inset -1px -1px #dfdfdf;
+  position: absolute;
+  inset: 0;
+  display: block;
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .archivo-diario {
@@ -1885,6 +1917,24 @@ html[data-pagina="escalera"] #territorio {
   cursor: default;
 }
 
+.pieza.diario .archivo-diario.es-icono {
+  position: absolute;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 96px;
+  padding: 8px 4px 6px;
+  text-align: center;
+}
+
+.pieza.diario .archivo-diario.es-icono:active {
+  cursor: grabbing;
+}
+
 .archivo-diario:hover,
 .archivo-diario:focus {
   background: #000080;
@@ -1901,6 +1951,33 @@ html[data-pagina="escalera"] #territorio {
   border: 1px solid #000;
 }
 
+.pieza.diario .es-icono .archivo-ico {
+  flex: 0 0 46px;
+  width: 36px;
+  height: 46px;
+  background: #fff;
+}
+
+.pieza.diario .es-icono .archivo-ico.es-foto {
+  width: 52px;
+  height: 52px;
+  flex-basis: 52px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.pieza.diario .es-icono .archivo-ico.es-foto::before {
+  display: none;
+}
+
+.pieza.diario .es-icono .archivo-ico.es-foto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
 .archivo-ico::before {
   content: "";
   position: absolute;
@@ -1910,10 +1987,27 @@ html[data-pagina="escalera"] #territorio {
   border-left: 5px solid #000;
 }
 
+.pieza.diario .es-icono .archivo-ico::before {
+  border-top-width: 12px;
+  border-left-width: 12px;
+}
+
 .archivo-nombre {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.pieza.diario .es-icono .archivo-nombre {
+  width: 100%;
+  white-space: normal;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.2;
+  max-height: 2.4em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .win95 {

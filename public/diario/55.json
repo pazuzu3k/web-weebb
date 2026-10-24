@@ -1,0 +1,49 @@
+{
+  "entradas": [
+    {
+      "id": 21,
+      "titulo": "PRUEBA#1",
+      "texto": "ESTO claramente es una prueba de interfaz e <a href=\"https://github.com\" target=\"_blank\" rel=\"noopener noreferrer\">hipervínculo</a> con una <a href=\"/diario/archivos/7.jpg\" data-anexo=\"1\" class=\"anexo-link\" data-kind=\"imagen\">imagen</a>",
+      "createdAt": "2026-10-21 23:22:45.259388+00",
+      "archivos": [
+        {
+          "id": 7,
+          "kind": "imagen",
+          "mime": "image/jpeg",
+          "nombre": "1nlSn.jpg",
+          "src": "/diario/archivos/7.jpg"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "titulo": "algo de Uno falta cuando se ama",
+      "texto": "\nno porque se lo haya llevado el otro \nquizá nadie se lleva nada<br>En el encuentro\napenas habla el balbuceo\nque anticipa la experiencia\nde esta lejanía que antes\nNo existia<br>\nAlgo ya no vuelve a coincidir consigo\nY queda irreductible al juego del recuerdo<br>\nCuando el otro desaparece \nLa restitución es tentadora\nPero en Uno, no se sostiene\naquello que nos excede<br>\nNo hay imagen capaz de contener\nel Vertigo de una huella <br>\nLa intimidad nos hace sensibles\nA eso que nunca nos estuvo disponible (*) –otra vez;\nproduce una Distancia\nque no se resuelve en la acumulación de iconos\no símbolos que deliren: conquista<br>\nLas estabilizaciones simbólicas buscan volver garantía\nLo que guarda su valor permaneciendo abierto<br>\n<strong>Algo de Uno en el encuentro, por fin,\nse Desvía de Uno</strong><br>\nY el otro no puede recogerlo<br>\nEl silencio producido por la última palabra;\nNo persigue un fondo escondido en el conocimiento del otro;\nCae como gota profunda de hierro \nEn el mismísimo plano de consistencia;\nDeja una extraña inclinación \nmodificando <em>campos de)(formación</em>\n",
+      "createdAt": "2026-09-25 05:28:21.950855+00",
+      "archivos": []
+    },
+    {
+      "id": 12,
+      "titulo": "⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡",
+      "texto": "romper el espejo <em>puesto</em> en el cielo",
+      "createdAt": "2026-09-25 02:27:02.276349+00",
+      "archivos": []
+    },
+    {
+      "id": 11,
+      "titulo": "⋆.˚✮☽☯︎☾✮˚.⋆",
+      "texto": "donde <strong>no</strong> reine la imagen,\nluz se prolonga en cada cosa que <em>haces</em>",
+      "createdAt": "2026-09-25 02:17:46.889845+00",
+      "archivos": []
+    },
+    {
+      "id": 10,
+      "titulo": "☾𖤓 ☾𖤓 ☾𖤓",
+      "texto": "en esta noche llena de la que mis manos no alcanzan <br>¿Quién lleva su<em> forma </em>ahora<em>\n</em>para salir a buscarla",
+      "createdAt": "2026-09-25 02:17:11.437395+00",
+      "archivos": []
+    }
+  ],
+  "preliminar": true,
+  "preliminarSrc": "/diario/preliminar.pdf"
+}

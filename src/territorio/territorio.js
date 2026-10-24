@@ -1373,7 +1373,10 @@ function sanearTexto(input) {
         const href = hrefDeAttrs(m[2] || "");
         const kindM = /data-kind\s*=\s*(?:"(pdf|imagen)"|'(pdf|imagen)'|(pdf|imagen))/i.exec(m[2] || "");
         const kind = kindM ? kindM[1] || kindM[2] || kindM[3] || "" : "";
-        const anexo = href.indexOf("/anexo/") === 0 || href.indexOf("/api/diario/archivo/") === 0;
+        const anexo =
+          href.indexOf("/anexo/") === 0 ||
+          href.indexOf("/api/diario/archivo/") === 0 ||
+          href.indexOf("/diario/archivos/") === 0;
         if (href && anexo) {
           open.push("a");
           out +=
@@ -1539,7 +1542,8 @@ function leerFormato(el) {
         node.getAttribute("data-anexo") ||
         node.classList.contains("anexo-link") ||
         href.indexOf("/anexo/") === 0 ||
-        href.indexOf("/api/diario/archivo/") === 0;
+        href.indexOf("/api/diario/archivo/") === 0 ||
+        href.indexOf("/diario/archivos/") === 0;
       const kind = node.getAttribute("data-kind") === "pdf" ? "pdf" : "imagen";
       const antes = out.length;
       const estiloN = marcaFormato(node);
@@ -1783,7 +1787,7 @@ function cifraFecha(iso) {
 function htmlCuerpoEntrada(e, dueno) {
   const cuerpo = htmlTexto(e.texto || "");
   const ligados = new Set();
-  const re = /\/api\/diario\/archivo\/(\d+)/g;
+  const re = /\/(?:api\/diario\/archivo|diario\/archivos)\/(\d+)/g;
   let m;
   while ((m = re.exec(e.texto || ""))) ligados.add(Number(m[1]));
   const media = (e.archivos || [])
@@ -1802,10 +1806,17 @@ function htmlCuerpoEntrada(e, dueno) {
   return `${acciones}${cuerpo}${media}`;
 }
 
-function htmlEntrada(e) {
+function htmlEntrada(e, modo) {
   const titulo = escapeHtml(e.titulo || "sin título");
-  return `<button type="button" class="archivo-diario" data-abrir-archivo="${e.id}">
-    <span class="archivo-ico" aria-hidden="true"></span>
+  const icono = modo === "icono";
+  const foto = icono
+    ? (e.archivos || []).find((a) => a.kind === "imagen" && (a.src || a.id))
+    : null;
+  const cara = foto
+    ? `<span class="archivo-ico es-foto"><img src="${escapeHtml(foto.src || "/api/diario/archivo/" + foto.id)}" alt=""></span>`
+    : `<span class="archivo-ico" aria-hidden="true"></span>`;
+  return `<button type="button" class="archivo-diario${icono ? " es-icono" : ""}" data-abrir-archivo="${e.id}">
+    ${cara}
     <span class="archivo-nombre">${titulo}</span>
   </button>`;
 }
@@ -1877,10 +1888,13 @@ function abrirArchivo95(e, dueno) {
   });
 }
 
+function esPeldano55EnLinea() {
+  const host = (location.hostname || "").toLowerCase();
+  return host === "smioochy.click" || host === "www.smioochy.click";
+}
+
 async function puerta55() {
-  const host = location.hostname || "";
-  const enLinea = host === "smioochy.click" || host === "www.smioochy.click";
-  if (!enLinea) return true;
+  if (!esPeldano55EnLinea()) return true;
   return new Promise((resolve) => {
     const win = document.createElement("div");
     win.className = "ventana flotante";
@@ -1960,7 +1974,10 @@ async function renderDiario(el) {
         </div>
         <button type="submit" class="dejar">·</button>
       </form>
-      <div class="entradas" data-entradas></div>
+      <div class="mesa-jueves">
+        <video class="fondo-jueves" src="/xerox/jueves-fondo.mp4" autoplay muted loop playsinline></video>
+        <div class="entradas" data-entradas></div>
+      </div>
       <div class="pie-jueves" aria-hidden="true">
         <img src="/xerox/jueves-pie.png" alt="">
       </div>
@@ -1969,6 +1986,13 @@ async function renderDiario(el) {
 }
 
 async function bindDiario(el) {
+  const fondo = el.querySelector(".fondo-jueves");
+  if (fondo) {
+    fondo.playbackRate = 0.75;
+    fondo.addEventListener("play", () => {
+      fondo.playbackRate = 0.75;
+    });
+  }
   const form = el.querySelector("[data-diario]");
   const sesion = el.querySelector("[data-sesion]");
   const abrir = el.querySelector("[data-abrir]");
@@ -2122,8 +2146,49 @@ async function bindDiario(el) {
     pintarLista();
   };
 
+  const colocarIconos = () => {
+    const botones = [...box.querySelectorAll(".es-icono")];
+    const n = botones.length;
+    const nIzq = Math.ceil(n / 2);
+    botones.forEach((btn, i) => {
+      if (!btn.dataset.puesto) {
+        const enIzq = i < nIzq;
+        const idx = enIzq ? i : i - nIzq;
+        const nCol = enIzq ? nIzq : n - nIzq;
+        const paso = nCol > 1 ? 72 / (nCol - 1) : 0;
+        btn.style.left = enIzq ? "7%" : "79%";
+        btn.style.top = (nCol > 1 ? 8 + idx * paso : 34) + "%";
+        btn.dataset.puesto = "1";
+      }
+      if (btn._mueve) return;
+      btn._mueve = true;
+      btn.addEventListener("pointerdown", (ev) => {
+        if (ev.button != null && ev.button !== 0) return;
+        const padre = box.getBoundingClientRect();
+        const r = btn.getBoundingClientRect();
+        const ox = ev.clientX - r.left;
+        const oy = ev.clientY - r.top;
+        let movio = false;
+        const mover = (mv) => {
+          if (Math.hypot(mv.clientX - ev.clientX, mv.clientY - ev.clientY) < 5 && !movio) return;
+          movio = true;
+          btn.style.left = mv.clientX - padre.left - ox + "px";
+          btn.style.top = mv.clientY - padre.top - oy + "px";
+        };
+        const soltar = () => {
+          window.removeEventListener("pointermove", mover);
+          window.removeEventListener("pointerup", soltar);
+          if (movio) btn.dataset.arrastre = "1";
+        };
+        window.addEventListener("pointermove", mover);
+        window.addEventListener("pointerup", soltar);
+      });
+    });
+  };
+
   const pintarEntradas = (entradas) => {
-    box.innerHTML = (entradas || []).map((e) => htmlEntrada(e)).join("");
+    box.innerHTML = (entradas || []).map((e) => htmlEntrada(e, "icono")).join("");
+    colocarIconos();
   };
 
   const LS = "smioochy-diario-55";
@@ -2137,44 +2202,27 @@ async function bindDiario(el) {
 
   let remoto = true;
   let cache = [];
+  let srcPreliminar = "/api/diario/preliminar";
+  const local = !esPeldano55EnLinea();
   try {
     const r = await fetch("/api/diario/");
     if (!r.ok) throw new Error("api");
     const data = await r.json();
     cache = data.entradas || [];
     preliminar = !!data.preliminar;
+    if (local && !cache.length) throw new Error("vacio");
   } catch {
     remoto = false;
-    cache = [
-  {
-    "id": 13,
-    "titulo": "algo de Uno falta cuando se ama",
-    "texto": "\nno porque se lo haya llevado el otro \nquizá nadie se lleva nada<br>En el encuentro\napenas habla el balbuceo\nque anticipa la experiencia\nde esta lejanía que antes\nNo existia<br>\nAlgo ya no vuelve a coincidir consigo\nY queda irreductible al juego del recuerdo<br>\nCuando el otro desaparece \nLa restitución es tentadora\nPero en Uno, no se sostiene\naquello que nos excede<br>\nNo hay imagen capaz de contener\nel Vertigo de una huella <br>\nLa intimidad nos hace sensibles\nA eso que nunca nos estuvo disponible (*) –otra vez;\nproduce una Distancia\nque no se resuelve en la acumulación de iconos\no símbolos que deliren: conquista<br>\nLas estabilizaciones simbólicas buscan volver garantía\nLo que guarda su valor permaneciendo abierto<br>\n<strong>Algo de Uno en el encuentro, por fin,\nse Desvía de Uno</strong><br>\nY el otro no puede recogerlo<br>\nEl silencio producido por la última palabra;\nNo persigue un fondo escondido en el conocimiento del otro;\nCae como gota profunda de hierro \nEn el mismísimo plano de consistencia;\nDeja una extraña inclinación \nmodificando <em>campos de)(formación</em>\n",
-    "createdAt": "2026-09-25 05:28:21.950855+00",
-    "archivos": []
-  },
-  {
-    "id": 12,
-    "titulo": "⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡⋆˚꩜｡",
-    "texto": "romper el espejo <em>puesto</em> en el cielo",
-    "createdAt": "2026-09-25 02:27:02.276349+00",
-    "archivos": []
-  },
-  {
-    "id": 11,
-    "titulo": "⋆.˚✮☽☯︎☾✮˚.⋆",
-    "texto": "donde <strong>no</strong> reine la imagen,\nluz se prolonga en cada cosa que <em>haces</em>",
-    "createdAt": "2026-09-25 02:17:46.889845+00",
-    "archivos": []
-  },
-  {
-    "id": 10,
-    "titulo": "☾𖤓 ☾𖤓 ☾𖤓",
-    "texto": "en esta noche llena de la que mis manos no alcanzan <br>¿Quién lleva su<em> forma </em>ahora<em>\n</em>para salir a buscarla",
-    "createdAt": "2026-09-25 02:17:11.437395+00",
-    "archivos": []
-  }
-];
+    try {
+      const r = await fetch("/diario/55.json");
+      if (!r.ok) throw new Error("clon");
+      const data = await r.json();
+      cache = data.entradas || [];
+      preliminar = !!data.preliminar;
+      if (data.preliminarSrc) srcPreliminar = data.preliminarSrc;
+    } catch {
+      cache = [];
+    }
   }
   try {
     const s = await fetch("/api/diario/sesion");
@@ -2193,7 +2241,7 @@ async function bindDiario(el) {
 
   exceso?.addEventListener("click", () => {
     if (!preliminar) return;
-    abrirPdf("/api/diario/preliminar");
+    abrirPdf(srcPreliminar);
   });
   excesoClip?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -2325,7 +2373,8 @@ async function bindDiario(el) {
         const data = await r.json();
         if (r.ok && data.entrada) {
           cache = [data.entrada, ...cache];
-          box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada, true));
+          box.insertAdjacentHTML("afterbegin", htmlEntrada(data.entrada, "icono"));
+          colocarIconos();
           ok = true;
         } else if (r.status === 401) {
           mostrar(false);
@@ -2356,6 +2405,10 @@ async function bindDiario(el) {
     }
     const archivo = e.target.closest("[data-abrir-archivo]");
     if (archivo) {
+      if (archivo.dataset.arrastre) {
+        delete archivo.dataset.arrastre;
+        return;
+      }
       const id = archivo.getAttribute("data-abrir-archivo");
       const item = cache.find((x) => String(x.id) === String(id));
       if (item) abrirArchivo95(item, dueno);
@@ -2421,7 +2474,7 @@ async function bindDiario(el) {
           }
           item.titulo = data.entrada.titulo || "";
           item.texto = data.entrada.texto || "";
-          art.outerHTML = htmlEntrada(item, true);
+          art.outerHTML = htmlEntrada(item, "icono");
         } catch {
           formEd.classList.remove("enviando");
         }
