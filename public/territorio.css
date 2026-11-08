@@ -1470,17 +1470,39 @@ html[data-pagina="escalera"] #territorio {
   margin: 1vh 0 0;
 }
 
+.ojo-jueves {
+  position: relative;
+  z-index: 2;
+  width: min(62vh, 68vw);
+  height: min(62vh, 68vw);
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: auto;
+  cursor: ew-resize;
+  background: #111;
+  touch-action: none;
+}
+
+.ojo-jueves .lente-ojo,
 .fondo-jueves {
   position: relative;
   z-index: 0;
   display: block;
-  height: 68vh;
-  width: auto;
-  max-width: 46vw;
-  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  object-fit: cover;
   pointer-events: none;
-  object-fit: contain;
   background: #000;
+}
+
+.ojo-jueves .fondo-jueves {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
 }
 
 .pieza.diario > :not(.fondo-jueves):not(.titulo-diario) {

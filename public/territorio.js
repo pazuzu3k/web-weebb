@@ -1975,7 +1975,9 @@ async function renderDiario(el) {
         <button type="submit" class="dejar">·</button>
       </form>
       <div class="mesa-jueves">
-        <video class="fondo-jueves" src="/xerox/jueves-fondo.mp4" autoplay muted loop playsinline></video>
+        <div class="ojo-jueves">
+          <video class="fondo-jueves" src="/xerox/jueves-fondo.mp4" autoplay muted loop playsinline></video>
+        </div>
         <div class="entradas" data-entradas></div>
       </div>
       <div class="pie-jueves" aria-hidden="true">
@@ -1985,6 +1987,82 @@ async function renderDiario(el) {
   await bindDiario(el);
 }
 
+function lenteOjo(video) {
+  const caja = video.parentElement;
+  if (!caja) return;
+  const canvas = document.createElement("canvas");
+  canvas.className = "lente-ojo";
+  canvas.width = 720;
+  canvas.height = 720;
+  const gl = canvas.getContext("webgl", { alpha: false, premultipliedAlpha: false });
+  if (!gl) return;
+  const sh = (tipo, src) => {
+    const s = gl.createShader(tipo);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  };
+  const prog = gl.createProgram();
+  gl.attachShader(prog, sh(gl.VERTEX_SHADER, "attribute vec2 p; varying vec2 v; void main(){ v=p*0.5+0.5; gl_Position=vec4(p,0.0,1.0);}"));
+  gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, "precision mediump float; varying vec2 v; uniform sampler2D tex; uniform vec2 cover; void main(){ vec2 uv=vec2(0.5+(v.x-0.5)*cover.x, 0.5+(v.y-0.5)*cover.y); vec2 d=uv-0.5; float r=length(d); float rr=clamp(r/0.5,0.0,1.0); float f=1.0-0.28*pow(rr,1.7); vec2 src=0.5+d*f; gl_FragColor=texture2D(tex, src); }"));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, "p");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+  const cover = gl.getUniformLocation(prog, "cover");
+  caja.insertBefore(canvas, video);
+  const arrancar = () => {
+    video.playbackRate = 0.75;
+    video.play().catch(() => {});
+  };
+  if (video.readyState >= 2) arrancar();
+  else video.addEventListener("loadeddata", arrancar, { once: true });
+  const pintar = () => {
+    if (video.readyState >= 2) {
+      const vw = video.videoWidth || 1;
+      const vh = video.videoHeight || 1;
+      const rel = vw / vh;
+      gl.uniform2f(cover, rel < 1 ? 1 : vh / vw, rel < 1 ? vw / vh : 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, video);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+    requestAnimationFrame(pintar);
+  };
+  pintar();
+  caja.addEventListener("pointerdown", (ev) => {
+    if (ev.button != null && ev.button !== 0) return;
+    const seguia = !video.paused;
+    const origen = ev.clientX;
+    const tiempo = video.currentTime || 0;
+    const ancho = caja.getBoundingClientRect().width || 1;
+    video.pause();
+    const mover = (mv) => {
+      const dur = video.duration || 0;
+      if (!dur) return;
+      const t = tiempo + ((mv.clientX - origen) / ancho) * dur;
+      video.currentTime = Math.min(dur - 0.05, Math.max(0, t));
+    };
+    const soltar = () => {
+      window.removeEventListener("pointermove", mover);
+      window.removeEventListener("pointerup", soltar);
+      if (seguia) video.play().catch(() => {});
+    };
+    window.addEventListener("pointermove", mover);
+    window.addEventListener("pointerup", soltar);
+  });
+}
+
 async function bindDiario(el) {
   const fondo = el.querySelector(".fondo-jueves");
   if (fondo) {
@@ -1992,6 +2070,7 @@ async function bindDiario(el) {
     fondo.addEventListener("play", () => {
       fondo.playbackRate = 0.75;
     });
+    lenteOjo(fondo);
   }
   const form = el.querySelector("[data-diario]");
   const sesion = el.querySelector("[data-sesion]");
