@@ -1469,7 +1469,7 @@ html[data-pagina="escalera"] #territorio {
 
 .ojo-jueves {
   position: relative;
-  z-index: 2;
+  z-index: 0;
   width: min(62vh, 68vw);
   height: min(62vh, 68vw);
   margin: 0 auto;
@@ -1909,6 +1909,7 @@ html[data-pagina="escalera"] #territorio {
 .pieza.diario .entradas {
   position: absolute;
   inset: 0;
+  z-index: 3;
   display: block;
   max-width: none;
   min-height: 0;
